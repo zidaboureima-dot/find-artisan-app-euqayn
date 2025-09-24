@@ -61,6 +61,11 @@ export default function RequestForm({ expertCode, expertName, onClose }: Request
     }
   };
 
+  const handleAdditionalAction = () => {
+    console.log('Additional button pressed after message field');
+    Alert.alert('Action', 'Bouton supplémentaire activé');
+  };
+
   const updateField = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -132,6 +137,14 @@ export default function RequestForm({ expertCode, expertName, onClose }: Request
               multiline
               numberOfLines={4}
             />
+          </View>
+
+          {/* Additional button after message field */}
+          <View style={styles.additionalButtonContainer}>
+            <TouchableOpacity style={styles.additionalButton} onPress={handleAdditionalAction}>
+              <Icon name="add-circle-outline" size={20} color={colors.accent} />
+              <Text style={styles.additionalButtonText}>Action supplémentaire</Text>
+            </TouchableOpacity>
           </View>
 
           <Text style={styles.note}>
@@ -220,6 +233,26 @@ const styles = StyleSheet.create({
   textArea: {
     height: 100,
     textAlignVertical: 'top',
+  },
+  additionalButtonContainer: {
+    marginBottom: 20,
+  },
+  additionalButton: {
+    backgroundColor: colors.backgroundAlt,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  additionalButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.accent,
   },
   note: {
     fontSize: 12,
