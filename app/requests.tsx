@@ -13,14 +13,21 @@ import { commonStyles, colors } from '../styles/commonStyles';
 import { dataStorage } from '../data/storage';
 import { ServiceRequest } from '../types';
 import Icon from '../components/Icon';
+import SimpleBottomSheet from '../components/BottomSheet';
+import AdminLogin from '../components/AdminLogin';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function RequestsScreen() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const { isAdmin, logout } = useAuth();
 
   useEffect(() => {
-    // Load all requests
-    setRequests(dataStorage.getAllRequests());
-  }, []);
+    if (isAdmin) {
+      // Load all requests for admin
+      setRequests(dataStorage.getAllRequests());
+    }
+  }, [isAdmin]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -58,18 +65,71 @@ export default function RequestsScreen() {
     }).format(date);
   };
 
+  const handleAdminLogin = () => {
+    setShowAdminLogin(true);
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.back();
+  };
+
+  // If not admin, show access denied screen
+  if (!isAdmin) {
+    return (
+      <SafeAreaView style={commonStyles.wrapper}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Icon name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Demandes</Text>
+        </View>
+
+        <View style={styles.accessDeniedContainer}>
+          <Icon name="lock-closed" size={64} color={colors.grey} />
+          <Text style={styles.accessDeniedTitle}>Accès Restreint</Text>
+          <Text style={styles.accessDeniedText}>
+            Cette section est réservée aux administrateurs.
+            Veuillez vous connecter avec vos identifiants administrateur.
+          </Text>
+          
+          <TouchableOpacity style={styles.loginButton} onPress={handleAdminLogin}>
+            <Icon name="log-in" size={20} color={colors.text} style={{ marginRight: 8 }} />
+            <Text style={styles.loginButtonText}>Connexion Administrateur</Text>
+          </TouchableOpacity>
+        </View>
+
+        <SimpleBottomSheet
+          isVisible={showAdminLogin}
+          onClose={() => setShowAdminLogin(false)}
+        >
+          <AdminLogin onClose={() => setShowAdminLogin(false)} />
+        </SimpleBottomSheet>
+      </SafeAreaView>
+    );
+  }
+
+  // Admin view
   return (
     <SafeAreaView style={commonStyles.wrapper}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Mes Demandes</Text>
+        <Text style={styles.headerTitle}>Toutes les Demandes</Text>
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+          <Icon name="log-out" size={20} color={colors.text} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.adminBadge}>
+        <Icon name="shield-checkmark" size={16} color="#4CAF50" />
+        <Text style={styles.adminBadgeText}>Mode Administrateur</Text>
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <Text style={styles.resultsTitle}>
-          {requests.length} demande{requests.length > 1 ? 's' : ''} envoyée{requests.length > 1 ? 's' : ''}
+          {requests.length} demande{requests.length > 1 ? 's' : ''} reçue{requests.length > 1 ? 's' : ''}
         </Text>
 
         {requests.map((request) => (
@@ -114,16 +174,10 @@ export default function RequestsScreen() {
         {requests.length === 0 && (
           <View style={styles.noRequests}>
             <Icon name="mail-outline" size={48} color={colors.grey} />
-            <Text style={styles.noRequestsText}>Aucune demande envoyée</Text>
+            <Text style={styles.noRequestsText}>Aucune demande reçue</Text>
             <Text style={styles.noRequestsSubtext}>
-              Recherchez des professionnels et envoyez vos premières demandes
+              Les demandes des utilisateurs apparaîtront ici
             </Text>
-            <TouchableOpacity
-              style={styles.searchButton}
-              onPress={() => router.push('/search')}
-            >
-              <Text style={styles.searchButtonText}>Rechercher des professionnels</Text>
-            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
@@ -150,9 +204,62 @@ const styles = StyleSheet.create({
     color: colors.text,
     flex: 1,
   },
+  logoutButton: {
+    padding: 8,
+  },
+  adminBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E8',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    marginHorizontal: 20,
+    marginTop: 10,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+  },
+  adminBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#4CAF50',
+    marginLeft: 5,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  accessDeniedContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+  },
+  accessDeniedTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: colors.text,
+    marginTop: 20,
+    marginBottom: 15,
+  },
+  accessDeniedText: {
+    fontSize: 16,
+    color: colors.grey,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 40,
+  },
+  loginButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+  },
+  loginButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
   },
   resultsTitle: {
     fontSize: 16,
@@ -253,16 +360,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 30,
-  },
-  searchButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-  },
-  searchButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
   },
 });
