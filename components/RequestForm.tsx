@@ -28,6 +28,8 @@ export default function RequestForm({ expertCode, expertName, onClose }: Request
   });
 
   const handleSubmit = () => {
+    console.log('Submit button pressed');
+    
     // Validation
     if (!formData.requesterName) {
       Alert.alert('Erreur', 'Veuillez saisir votre nom');
@@ -64,7 +66,7 @@ export default function RequestForm({ expertCode, expertName, onClose }: Request
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Faire une demande</Text>
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -72,71 +74,80 @@ export default function RequestForm({ expertCode, expertName, onClose }: Request
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.subtitle}>
-        Demande pour: <Text style={styles.expertName}>{expertName}</Text>
-      </Text>
-      <Text style={styles.expertCode}>Code: {expertCode}</Text>
-
-      <View style={styles.form}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Votre nom *</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.requesterName}
-            onChangeText={(value) => updateField('requesterName', value)}
-            placeholder="Nom et prénom"
-            placeholderTextColor={colors.grey}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Téléphone</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.requesterPhone}
-            onChangeText={(value) => updateField('requesterPhone', value)}
-            placeholder="06 12 34 56 78"
-            placeholderTextColor={colors.grey}
-            keyboardType="phone-pad"
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.requesterEmail}
-            onChangeText={(value) => updateField('requesterEmail', value)}
-            placeholder="email@exemple.com"
-            placeholderTextColor={colors.grey}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Message (optionnel)</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={formData.message}
-            onChangeText={(value) => updateField('message', value)}
-            placeholder="Décrivez votre projet ou vos besoins..."
-            placeholderTextColor={colors.grey}
-            multiline
-            numberOfLines={4}
-          />
-        </View>
-
-        <Text style={styles.note}>
-          * Au moins un numéro de téléphone ou un email est requis
+      <ScrollView 
+        style={styles.scrollContainer} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <Text style={styles.subtitle}>
+          Demande pour: <Text style={styles.expertName}>{expertName}</Text>
         </Text>
+        <Text style={styles.expertCode}>Code: {expertCode}</Text>
 
+        <View style={styles.form}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Votre nom *</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.requesterName}
+              onChangeText={(value) => updateField('requesterName', value)}
+              placeholder="Nom et prénom"
+              placeholderTextColor={colors.grey}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Téléphone</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.requesterPhone}
+              onChangeText={(value) => updateField('requesterPhone', value)}
+              placeholder="06 12 34 56 78"
+              placeholderTextColor={colors.grey}
+              keyboardType="phone-pad"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.requesterEmail}
+              onChangeText={(value) => updateField('requesterEmail', value)}
+              placeholder="email@exemple.com"
+              placeholderTextColor={colors.grey}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Message (optionnel)</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={formData.message}
+              onChangeText={(value) => updateField('message', value)}
+              placeholder="Décrivez votre projet ou vos besoins..."
+              placeholderTextColor={colors.grey}
+              multiline
+              numberOfLines={4}
+            />
+          </View>
+
+          <Text style={styles.note}>
+            * Au moins un numéro de téléphone ou un email est requis
+          </Text>
+        </View>
+      </ScrollView>
+
+      {/* Fixed submit button at the bottom */}
+      <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Icon name="send" size={20} color={colors.text} />
-          <Text style={styles.submitButtonText}>Envoyer la demande</Text>
+          <Icon name="send" size={20} color={colors.background} />
+          <Text style={styles.submitButtonText}>Envoyer</Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -162,6 +173,12 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: 8,
   },
+  scrollContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
   subtitle: {
     fontSize: 16,
     color: colors.text,
@@ -179,7 +196,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   form: {
-    padding: 20,
+    paddingHorizontal: 20,
   },
   inputGroup: {
     marginBottom: 20,
@@ -208,20 +225,35 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.grey,
     fontStyle: 'italic',
-    marginBottom: 20,
+    marginBottom: 10,
+  },
+  buttonContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderTopColor: colors.backgroundAlt,
+    backgroundColor: colors.background,
   },
   submitButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingVertical: 15,
+    backgroundColor: colors.accent,
+    borderRadius: 12,
+    paddingVertical: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
+    shadowColor: colors.accent,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   submitButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.background,
   },
 });
