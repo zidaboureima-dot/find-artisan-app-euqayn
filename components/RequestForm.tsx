@@ -12,6 +12,7 @@ import {
 import { colors } from '../styles/commonStyles';
 import { dataStorage } from '../data/storage';
 import Icon from './Icon';
+import * as MailComposer from 'expo-mail-composer';
 
 interface RequestFormProps {
   expertCode: string;
@@ -27,7 +28,7 @@ export default function RequestForm({ expertCode, expertName, onClose }: Request
     message: '',
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log('Submit button pressed');
     
     // Validation
@@ -42,6 +43,7 @@ export default function RequestForm({ expertCode, expertName, onClose }: Request
     }
 
     try {
+      // Save to local storage first
       dataStorage.addServiceRequest({
         expertCode,
         requesterName: formData.requesterName,
@@ -50,20 +52,72 @@ export default function RequestForm({ expertCode, expertName, onClose }: Request
         message: formData.message || undefined,
       });
 
-      Alert.alert(
-        'Demande envoyée',
-        `Votre demande a été envoyée à ${expertName}. Vous serez contacté prochainement.`,
-        [{ text: 'OK', onPress: onClose }]
-      );
+      // Prepare email content
+      const subject = `Demande de service - ${expertName} (Code: ${expertCode})`;
+      const body = `
+Nouvelle demande de service:
+
+Expert demandé: ${expertName}
+Code expert: ${expertCode}
+
+Informations du demandeur:
+- Nom: ${formData.requesterName}
+- Téléphone: ${formData.requesterPhone || 'Non fourni'}
+- Email: ${formData.requesterEmail || 'Non fourni'}
+
+Message:
+${formData.message || 'Aucun message spécifique'}
+
+---
+Cette demande a été générée automatiquement par l'application.
+      `;
+
+      // Check if mail composer is available
+      const isAvailable = await MailComposer.isAvailableAsync();
+      
+      if (isAvailable) {
+        // Open mail composer with pre-filled data
+        await MailComposer.composeAsync({
+          recipients: ['zidabo@hotmail.com'],
+          subject: subject,
+          body: body,
+        });
+        
+        Alert.alert(
+          'Email préparé',
+          'L\'application email s\'est ouverte avec votre demande pré-remplie. Veuillez envoyer l\'email pour finaliser votre demande.',
+          [{ text: 'OK', onPress: onClose }]
+        );
+      } else {
+        // Fallback: show alert with email details
+        Alert.alert(
+          'Email non disponible',
+          `Veuillez envoyer un email manuellement à zidabo@hotmail.com avec les informations suivantes:\n\nSujet: ${subject}\n\nContenu:\n${body}`,
+          [{ text: 'OK', onPress: onClose }]
+        );
+      }
     } catch (error) {
       console.log('Error sending request:', error);
       Alert.alert('Erreur', 'Erreur lors de l\'envoi de la demande');
     }
   };
 
-  const handleAdditionalAction = () => {
-    console.log('Additional button pressed after message field');
-    Alert.alert('Action', 'Bouton supplémentaire activé');
+  const handleAdditionalAction = async () => {
+    console.log('Additional button pressed after message field - sending email directly');
+    
+    // Same validation as main submit
+    if (!formData.requesterName) {
+      Alert.alert('Erreur', 'Veuillez saisir votre nom avant d\'envoyer');
+      return;
+    }
+
+    if (!formData.requesterPhone && !formData.requesterEmail) {
+      Alert.alert('Erreur', 'Veuillez fournir au moins un numéro de téléphone ou un email');
+      return;
+    }
+
+    // Call the same submit function
+    await handleSubmit();
   };
 
   const updateField = (field: string, value: string) => {
@@ -142,8 +196,8 @@ export default function RequestForm({ expertCode, expertName, onClose }: Request
           {/* Additional button after message field */}
           <View style={styles.additionalButtonContainer}>
             <TouchableOpacity style={styles.additionalButton} onPress={handleAdditionalAction}>
-              <Icon name="add-circle-outline" size={20} color={colors.accent} />
-              <Text style={styles.additionalButtonText}>Action supplémentaire</Text>
+              <Icon name="mail-outline" size={20} color={colors.accent} />
+              <Text style={styles.additionalButtonText}>Envoyer par email</Text>
             </TouchableOpacity>
           </View>
 
