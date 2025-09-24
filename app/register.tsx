@@ -17,7 +17,7 @@ import { TRADES } from '../types';
 import Icon from '../components/Icon';
 
 export default function RegisterScreen() {
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     code: '',
     name: '',
     trade: '',
@@ -25,7 +25,9 @@ export default function RegisterScreen() {
     profileSummary: '',
     phone: '',
     email: '',
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
   const [showTradePicker, setShowTradePicker] = useState(false);
 
   const handleSubmit = () => {
@@ -47,9 +49,16 @@ export default function RegisterScreen() {
 
     try {
       dataStorage.addTradesperson(formData);
-      Alert.alert('Succès', 'Professionnel enregistré avec succès!', [
-        { text: 'OK', onPress: () => router.back() }
+      
+      // Réinitialiser le formulaire après un enregistrement réussi
+      setFormData(initialFormData);
+      setShowTradePicker(false);
+      
+      Alert.alert('Succès', 'Professionnel enregistré avec succès! Le formulaire a été remis à vide pour un nouvel enregistrement.', [
+        { text: 'OK' }
       ]);
+      
+      console.log('Tradesperson registered successfully, form reset');
     } catch (error) {
       console.log('Error registering tradesperson:', error);
       Alert.alert('Erreur', 'Erreur lors de l\'enregistrement');
