@@ -13,18 +13,11 @@ export default function Logo({ size = 'medium', showText = true }: LogoProps) {
   
   return (
     <View style={styles.container}>
-      {/* Placeholder pour le logo - remplacez cette View par votre Image une fois uploadée */}
-      <View style={[styles.logoPlaceholder, { width: logoSize, height: logoSize }]}>
-        <Text style={[styles.logoText, { fontSize: logoSize * 0.3 }]}>LOGO</Text>
-      </View>
-      
-      {/* Une fois que vous aurez uploadé votre logo, remplacez la View ci-dessus par :
       <Image 
-        source={require('../assets/images/votre-logo.png')} 
+        source={require('../assets/images/163403eb-1cee-44a4-abea-f4495ac3417f.jpeg')} 
         style={[styles.logo, { width: logoSize, height: logoSize }]}
         resizeMode="contain"
       />
-      */}
       
       {showText && (
         <Text style={styles.appName}>Artisans Pro</Text>
@@ -37,19 +30,6 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  logoPlaceholder: {
-    backgroundColor: colors.backgroundAlt,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: colors.accent,
-    borderStyle: 'dashed',
-  },
-  logoText: {
-    color: colors.accent,
-    fontWeight: 'bold',
   },
   logo: {
     borderRadius: 10,
