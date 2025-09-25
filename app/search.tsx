@@ -22,21 +22,24 @@ export default function SearchScreen() {
   const [showTradePicker, setShowTradePicker] = useState(false);
 
   useEffect(() => {
-    // Initialize sample data and load all tradespeople
+    // Initialize sample data and load only validated tradespeople
     dataStorage.initializeSampleData();
-    setResults(dataStorage.getAllTradespeople());
+    setResults(dataStorage.getValidatedTradespeople());
+    console.log('Loaded validated tradespeople for search:', dataStorage.getValidatedTradespeople().length);
   }, []);
 
   const handleSearch = () => {
     console.log('Searching for:', { trade: searchTrade, city: searchCity });
     const searchResults = dataStorage.searchTradespeople(searchTrade, searchCity);
     setResults(searchResults);
+    console.log('Search results (validated only):', searchResults.length);
   };
 
   const handleReset = () => {
     setSearchTrade('');
     setSearchCity('');
-    setResults(dataStorage.getAllTradespeople());
+    // Reset to show all validated tradespeople
+    setResults(dataStorage.getValidatedTradespeople());
   };
 
   const handleSelectTradesperson = (tradesperson: Tradesperson) => {
@@ -122,9 +125,15 @@ export default function SearchScreen() {
       </View>
 
       <ScrollView style={styles.resultsContainer} showsVerticalScrollIndicator={false}>
-        <Text style={styles.resultsTitle}>
-          {results.length} professionnel{results.length > 1 ? 's' : ''} trouvé{results.length > 1 ? 's' : ''}
-        </Text>
+        <View style={styles.resultsHeader}>
+          <Text style={styles.resultsTitle}>
+            {results.length} professionnel{results.length > 1 ? 's' : ''} validé{results.length > 1 ? 's' : ''}
+          </Text>
+          <View style={styles.validatedBadge}>
+            <Icon name="checkmark-circle" size={16} color="#4CAF50" />
+            <Text style={styles.validatedText}>Profils vérifiés</Text>
+          </View>
+        </View>
 
         {results.map((tradesperson) => (
           <TouchableOpacity
@@ -134,7 +143,10 @@ export default function SearchScreen() {
           >
             <View style={styles.cardHeader}>
               <View style={styles.cardInfo}>
-                <Text style={styles.cardName}>{tradesperson.name}</Text>
+                <View style={styles.nameRow}>
+                  <Text style={styles.cardName}>{tradesperson.name}</Text>
+                  <Icon name="checkmark-circle" size={16} color="#4CAF50" />
+                </View>
                 <Text style={styles.cardTrade}>{tradesperson.trade}</Text>
                 <Text style={styles.cardCity}>{tradesperson.city}</Text>
               </View>
@@ -157,9 +169,9 @@ export default function SearchScreen() {
         {results.length === 0 && (
           <View style={styles.noResults}>
             <Icon name="search" size={48} color={colors.grey} />
-            <Text style={styles.noResultsText}>Aucun professionnel trouvé</Text>
+            <Text style={styles.noResultsText}>Aucun professionnel validé trouvé</Text>
             <Text style={styles.noResultsSubtext}>
-              Essayez de modifier vos critères de recherche
+              Essayez de modifier vos critères de recherche ou revenez plus tard
             </Text>
           </View>
         )}
@@ -298,12 +310,32 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  resultsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
+  },
   resultsTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
-    padding: 20,
-    paddingBottom: 10,
+  },
+  validatedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E8',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  validatedText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#4CAF50',
   },
   resultCard: {
     backgroundColor: colors.backgroundAlt,
@@ -323,11 +355,16 @@ const styles = StyleSheet.create({
   cardInfo: {
     flex: 1,
   },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
   cardName: {
     fontSize: 18,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 4,
   },
   cardTrade: {
     fontSize: 14,
