@@ -9,6 +9,7 @@ export interface Tradesperson {
   phone?: string;
   email?: string;
   createdAt: Date;
+  validated: boolean; // Nouveau champ pour la validation
 }
 
 export interface ServiceRequest {

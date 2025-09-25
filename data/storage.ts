@@ -8,14 +8,15 @@ class DataStorage {
   private requests: ServiceRequest[] = [];
 
   // Tradespeople methods
-  addTradesperson(tradesperson: Omit<Tradesperson, 'id' | 'createdAt'>): Tradesperson {
+  addTradesperson(tradesperson: Omit<Tradesperson, 'id' | 'createdAt' | 'validated'>): Tradesperson {
     const newTradesperson: Tradesperson = {
       ...tradesperson,
       id: Date.now().toString(),
       createdAt: new Date(),
+      validated: false, // Par défaut, les artisans ne sont pas validés
     };
     this.tradespeople.push(newTradesperson);
-    console.log('Added tradesperson:', newTradesperson);
+    console.log('Added tradesperson (awaiting validation):', newTradesperson);
     return newTradesperson;
   }
 
@@ -23,8 +24,21 @@ class DataStorage {
     return this.tradespeople;
   }
 
+  // Retourne seulement les artisans validés pour la recherche publique
+  getValidatedTradespeople(): Tradesperson[] {
+    return this.tradespeople.filter(person => person.validated);
+  }
+
+  // Retourne les artisans en attente de validation (pour les admins)
+  getPendingTradespeople(): Tradesperson[] {
+    return this.tradespeople.filter(person => !person.validated);
+  }
+
   searchTradespeople(trade?: string, city?: string): Tradesperson[] {
+    // Seuls les artisans validés apparaissent dans les résultats de recherche
     return this.tradespeople.filter(person => {
+      if (!person.validated) return false; // Filtrer les non-validés
+      
       const matchesTrade = !trade || person.trade.toLowerCase().includes(trade.toLowerCase());
       const matchesCity = !city || person.city.toLowerCase().includes(city.toLowerCase());
       return matchesTrade && matchesCity;
@@ -32,7 +46,30 @@ class DataStorage {
   }
 
   getTradesperonByCode(code: string): Tradesperson | undefined {
-    return this.tradespeople.find(person => person.code === code);
+    // Seuls les artisans validés peuvent être trouvés par code
+    return this.tradespeople.find(person => person.code === code && person.validated);
+  }
+
+  // Nouvelle méthode pour valider un artisan
+  validateTradesperson(id: string): boolean {
+    const tradesperson = this.tradespeople.find(person => person.id === id);
+    if (tradesperson) {
+      tradesperson.validated = true;
+      console.log('Tradesperson validated:', tradesperson);
+      return true;
+    }
+    return false;
+  }
+
+  // Nouvelle méthode pour rejeter un artisan
+  rejectTradesperson(id: string): boolean {
+    const index = this.tradespeople.findIndex(person => person.id === id);
+    if (index !== -1) {
+      const rejected = this.tradespeople.splice(index, 1)[0];
+      console.log('Tradesperson rejected and removed:', rejected);
+      return true;
+    }
+    return false;
   }
 
   // Service requests methods
@@ -98,7 +135,11 @@ class DataStorage {
         }
       ];
 
-      sampleTradespeople.forEach(person => this.addTradesperson(person));
+      // Ajouter les données d'exemple et les valider automatiquement
+      sampleTradespeople.forEach(person => {
+        const addedPerson = this.addTradesperson(person);
+        this.validateTradesperson(addedPerson.id); // Valider automatiquement les données d'exemple
+      });
     }
   }
 }

@@ -47,6 +47,13 @@ export default function RegisterScreen() {
       return;
     }
 
+    // Vérifier si le code existe déjà
+    const existingTradesperson = dataStorage.getAllTradespeople().find(person => person.code === formData.code);
+    if (existingTradesperson) {
+      Alert.alert('Erreur', 'Ce code professionnel existe déjà. Veuillez choisir un autre code.');
+      return;
+    }
+
     try {
       dataStorage.addTradesperson(formData);
       
@@ -54,11 +61,13 @@ export default function RegisterScreen() {
       setFormData(initialFormData);
       setShowTradePicker(false);
       
-      Alert.alert('Succès', 'Professionnel enregistré avec succès! Le formulaire a été remis à vide pour un nouvel enregistrement.', [
-        { text: 'OK' }
-      ]);
+      Alert.alert(
+        'Inscription Soumise', 
+        'Votre inscription a été soumise avec succès ! Elle sera examinée par nos administrateurs avant d\'être validée. Vous recevrez une confirmation une fois votre profil approuvé.',
+        [{ text: 'OK' }]
+      );
       
-      console.log('Tradesperson registered successfully, form reset');
+      console.log('Tradesperson registration submitted, awaiting admin validation');
     } catch (error) {
       console.log('Error registering tradesperson:', error);
       Alert.alert('Erreur', 'Erreur lors de l\'enregistrement');
@@ -75,10 +84,18 @@ export default function RegisterScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Enregistrer un Professionnel</Text>
+        <Text style={styles.headerTitle}>Inscription Artisan</Text>
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.infoBox}>
+          <Icon name="information-circle" size={20} color={colors.accent} />
+          <Text style={styles.infoText}>
+            Votre inscription sera examinée par nos administrateurs avant validation. 
+            Seuls les profils validés apparaîtront dans les résultats de recherche.
+          </Text>
+        </View>
+
         <View style={styles.form}>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Code Professionnel *</Text>
@@ -186,7 +203,7 @@ export default function RegisterScreen() {
           </View>
 
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Enregistrer le Professionnel</Text>
+            <Text style={styles.submitButtonText}>Soumettre l'Inscription</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -217,8 +234,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  infoBox: {
+    flexDirection: 'row',
+    backgroundColor: colors.backgroundAlt,
+    margin: 20,
+    padding: 15,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.accent,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.text,
+    lineHeight: 20,
+    marginLeft: 10,
+  },
   form: {
     padding: 20,
+    paddingTop: 0,
   },
   inputGroup: {
     marginBottom: 20,
