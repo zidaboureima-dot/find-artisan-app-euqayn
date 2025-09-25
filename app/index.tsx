@@ -5,13 +5,14 @@ import { commonStyles, colors } from '../styles/commonStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import Icon from '../components/Icon';
+import Logo from '../components/Logo';
 
 export default function MainScreen() {
   return (
     <SafeAreaView style={commonStyles.wrapper}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Artisans Pro</Text>
+          <Logo size="large" showText={true} />
           <Text style={styles.subtitle}>
             Trouvez et contactez des professionnels qualifiés
           </Text>
@@ -87,17 +88,12 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     paddingHorizontal: 20,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: colors.text,
-    marginBottom: 10,
-  },
   subtitle: {
     fontSize: 16,
     color: colors.grey,
     textAlign: 'center',
     lineHeight: 22,
+    marginTop: 20,
   },
   menuContainer: {
     flex: 1,
@@ -111,7 +107,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.grey,
+    borderColor: colors.accent,
+    borderOpacity: 0.3,
   },
   menuIcon: {
     width: 60,

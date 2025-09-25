@@ -5,11 +5,11 @@ export const colors = {
   primary: '#2563EB',      // Blue
   secondary: '#1D4ED8',    // Darker Blue
   accent: '#60A5FA',       // Light Blue
-  background: '#0F172A',   // Dark Blue-Gray
-  backgroundAlt: '#1E293B', // Lighter Dark Blue-Gray
+  background: '#1e3a8a',   // Navy Blue (Bleu marine)
+  backgroundAlt: '#1e40af', // Lighter Navy Blue
   text: '#F1F5F9',         // Light Gray
   grey: '#94A3B8',         // Medium Gray
-  card: '#1E293B',         // Card background
+  card: '#1e40af',         // Card background (Navy Blue)
   success: '#10B981',      // Green
   warning: '#F59E0B',      // Orange
   error: '#EF4444',        // Red
