@@ -9,74 +9,113 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { commonStyles, colors } from '../styles/commonStyles';
-import { dataStorage } from '../data/storage';
-import { TRADES } from '../types';
 import Icon from '../components/Icon';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { dataStorage } from '../data/storage';
 
 export default function RegisterScreen() {
-  const initialFormData = {
-    code: '',
+  const [formData, setFormData] = useState({
     name: '',
     trade: '',
     city: '',
     profileSummary: '',
     phone: '',
     email: '',
-  };
+  });
 
-  const [formData, setFormData] = useState(initialFormData);
   const [showTradePicker, setShowTradePicker] = useState(false);
 
   const handleSubmit = () => {
     // Validation
-    if (!formData.code || !formData.name || !formData.trade || !formData.city || !formData.profileSummary) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires');
+    if (!formData.name.trim()) {
+      Alert.alert('Erreur', 'Veuillez saisir votre nom');
       return;
     }
 
-    if (formData.profileSummary.length > 300) {
-      Alert.alert('Erreur', 'Le résumé du profil ne peut pas dépasser 300 mots');
+    if (!formData.trade.trim()) {
+      Alert.alert('Erreur', 'Veuillez sélectionner votre métier');
       return;
     }
 
-    if (!formData.phone && !formData.email) {
-      Alert.alert('Erreur', 'Veuillez fournir au moins un numéro de téléphone ou un email');
+    if (!formData.city.trim()) {
+      Alert.alert('Erreur', 'Veuillez saisir votre ville');
       return;
     }
 
-    // Vérifier si le code existe déjà
-    const existingTradesperson = dataStorage.getAllTradespeople().find(person => person.code === formData.code);
-    if (existingTradesperson) {
-      Alert.alert('Erreur', 'Ce code professionnel existe déjà. Veuillez choisir un autre code.');
+    if (!formData.profileSummary.trim()) {
+      Alert.alert('Erreur', 'Veuillez saisir un résumé de votre profil');
+      return;
+    }
+
+    if (formData.profileSummary.trim().length > 300) {
+      Alert.alert('Erreur', 'Le résumé du profil ne peut pas dépasser 300 caractères');
+      return;
+    }
+
+    // Au moins un moyen de contact requis
+    if (!formData.phone.trim() && !formData.email.trim()) {
+      Alert.alert('Erreur', 'Veuillez fournir au moins un numéro de téléphone ou une adresse email');
       return;
     }
 
     try {
-      dataStorage.addTradesperson(formData);
+      // Générer un code unique
+      const code = `${formData.trade.substring(0, 3).toUpperCase()}${Date.now().toString().slice(-3)}`;
       
-      // Réinitialiser le formulaire après un enregistrement réussi
-      setFormData(initialFormData);
-      setShowTradePicker(false);
-      
+      const tradesperson = dataStorage.addTradesperson({
+        code,
+        name: formData.name.trim(),
+        trade: formData.trade.trim(),
+        city: formData.city.trim(),
+        profileSummary: formData.profileSummary.trim(),
+        phone: formData.phone.trim() || undefined,
+        email: formData.email.trim() || undefined,
+      });
+
+      console.log('Tradesperson registered:', tradesperson);
+
       Alert.alert(
-        'Inscription Soumise', 
-        'Votre inscription a été soumise avec succès ! Elle sera examinée par nos administrateurs avant d\'être validée. Vous recevrez une confirmation une fois votre profil approuvé.',
-        [{ text: 'OK' }]
+        'Inscription soumise !',
+        `Votre inscription a été soumise avec succès.\n\nVotre code: ${code}\n\nVotre profil sera visible dans la recherche après validation par un administrateur.`,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Reset form
+              setFormData({
+                name: '',
+                trade: '',
+                city: '',
+                profileSummary: '',
+                phone: '',
+                email: '',
+              });
+              router.back();
+            },
+          },
+        ]
       );
-      
-      console.log('Tradesperson registration submitted, awaiting admin validation');
     } catch (error) {
-      console.log('Error registering tradesperson:', error);
-      Alert.alert('Erreur', 'Erreur lors de l\'enregistrement');
+      console.error('Error registering tradesperson:', error);
+      Alert.alert('Erreur', 'Une erreur est survenue lors de l\'inscription');
     }
   };
 
   const updateField = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
+
+  const selectTrade = (trade: string) => {
+    updateField('trade', trade);
+    setShowTradePicker(false);
+  };
+
+  const tradeCategories = dataStorage.getTradeCategories();
 
   return (
     <SafeAreaView style={commonStyles.wrapper}>
@@ -88,33 +127,16 @@ export default function RegisterScreen() {
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.infoBox}>
-          <Icon name="information-circle" size={20} color={colors.accent} />
-          <Text style={styles.infoText}>
-            Votre inscription sera examinée par nos administrateurs avant validation. 
-            Seuls les profils validés apparaîtront dans les résultats de recherche.
-          </Text>
-        </View>
-
         <View style={styles.form}>
+          <Text style={styles.sectionTitle}>Informations personnelles</Text>
+          
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Code Professionnel *</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.code}
-              onChangeText={(value) => updateField('code', value)}
-              placeholder="Ex: MAC001"
-              placeholderTextColor={colors.grey}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Nom Complet *</Text>
+            <Text style={styles.label}>Nom complet *</Text>
             <TextInput
               style={styles.input}
               value={formData.name}
-              onChangeText={(value) => updateField('name', value)}
-              placeholder="Nom et prénom"
+              onChangeText={(text) => updateField('name', text)}
+              placeholder="Votre nom et prénom"
               placeholderTextColor={colors.grey}
             />
           </View>
@@ -122,29 +144,32 @@ export default function RegisterScreen() {
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Métier *</Text>
             <TouchableOpacity
-              style={styles.picker}
+              style={[styles.input, styles.picker]}
               onPress={() => setShowTradePicker(!showTradePicker)}
             >
               <Text style={[styles.pickerText, !formData.trade && styles.placeholder]}>
-                {formData.trade || 'Sélectionner un métier'}
+                {formData.trade || 'Sélectionnez votre métier'}
               </Text>
-              <Icon name="chevron-down" size={20} color={colors.grey} />
+              <Icon 
+                name={showTradePicker ? "chevron-up" : "chevron-down"} 
+                size={20} 
+                color={colors.grey} 
+              />
             </TouchableOpacity>
             
             {showTradePicker && (
-              <View style={styles.tradeList}>
-                {TRADES.map((trade) => (
-                  <TouchableOpacity
-                    key={trade}
-                    style={styles.tradeItem}
-                    onPress={() => {
-                      updateField('trade', trade);
-                      setShowTradePicker(false);
-                    }}
-                  >
-                    <Text style={styles.tradeItemText}>{trade}</Text>
-                  </TouchableOpacity>
-                ))}
+              <View style={styles.pickerOptions}>
+                <ScrollView style={styles.pickerScroll} nestedScrollEnabled>
+                  {tradeCategories.map((trade, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.pickerOption}
+                      onPress={() => selectTrade(trade)}
+                    >
+                      <Text style={styles.pickerOptionText}>{trade}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
             )}
           </View>
@@ -154,36 +179,21 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               value={formData.city}
-              onChangeText={(value) => updateField('city', value)}
-              placeholder="Ville d'exercice"
+              onChangeText={(text) => updateField('city', text)}
+              placeholder="Votre ville d'activité"
               placeholderTextColor={colors.grey}
             />
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Résumé du Profil * (max 300 mots)</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={formData.profileSummary}
-              onChangeText={(value) => updateField('profileSummary', value)}
-              placeholder="Décrivez votre expérience, spécialités et services..."
-              placeholderTextColor={colors.grey}
-              multiline
-              numberOfLines={6}
-              maxLength={300}
-            />
-            <Text style={styles.charCount}>
-              {formData.profileSummary.length}/300 caractères
-            </Text>
-          </View>
-
+          <Text style={styles.sectionTitle}>Contact</Text>
+          
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Téléphone</Text>
             <TextInput
               style={styles.input}
               value={formData.phone}
-              onChangeText={(value) => updateField('phone', value)}
-              placeholder="06 12 34 56 78"
+              onChangeText={(text) => updateField('phone', text)}
+              placeholder="Votre numéro de téléphone"
               placeholderTextColor={colors.grey}
               keyboardType="phone-pad"
             />
@@ -194,16 +204,47 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               value={formData.email}
-              onChangeText={(value) => updateField('email', value)}
-              placeholder="email@exemple.com"
+              onChangeText={(text) => updateField('email', text)}
+              placeholder="Votre adresse email"
               placeholderTextColor={colors.grey}
               keyboardType="email-address"
               autoCapitalize="none"
             />
           </View>
 
+          <Text style={styles.contactNote}>
+            * Au moins un moyen de contact (téléphone ou email) est requis
+          </Text>
+
+          <Text style={styles.sectionTitle}>Profil professionnel</Text>
+          
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>
+              Résumé du profil * ({formData.profileSummary.length}/300)
+            </Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={formData.profileSummary}
+              onChangeText={(text) => updateField('profileSummary', text)}
+              placeholder="Décrivez votre expérience, vos spécialités et vos compétences (maximum 300 caractères)"
+              placeholderTextColor={colors.grey}
+              multiline
+              numberOfLines={6}
+              maxLength={300}
+            />
+          </View>
+
+          <View style={styles.infoBox}>
+            <Icon name="information-circle" size={20} color={colors.accent} />
+            <Text style={styles.infoText}>
+              Votre inscription sera examinée par nos administrateurs. 
+              Vous recevrez une confirmation une fois votre profil validé.
+            </Text>
+          </View>
+
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Soumettre l'Inscription</Text>
+            <Icon name="checkmark-circle" size={20} color="white" />
+            <Text style={styles.submitButtonText}>Soumettre l'inscription</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -234,101 +275,107 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  infoBox: {
-    flexDirection: 'row',
-    backgroundColor: colors.backgroundAlt,
-    margin: 20,
-    padding: 15,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.accent,
-  },
-  infoText: {
-    flex: 1,
-    fontSize: 14,
-    color: colors.text,
-    lineHeight: 20,
-    marginLeft: 10,
-  },
   form: {
     padding: 20,
-    paddingTop: 0,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 20,
+    marginTop: 10,
   },
   inputGroup: {
     marginBottom: 20,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '600',
     color: colors.text,
     marginBottom: 8,
   },
   input: {
     backgroundColor: colors.backgroundAlt,
-    borderWidth: 1,
-    borderColor: colors.grey,
     borderRadius: 8,
     paddingHorizontal: 15,
     paddingVertical: 12,
     fontSize: 16,
     color: colors.text,
+    borderWidth: 1,
+    borderColor: colors.grey,
   },
   textArea: {
     height: 120,
     textAlignVertical: 'top',
   },
-  charCount: {
-    fontSize: 12,
-    color: colors.grey,
-    textAlign: 'right',
-    marginTop: 5,
-  },
   picker: {
-    backgroundColor: colors.backgroundAlt,
-    borderWidth: 1,
-    borderColor: colors.grey,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   pickerText: {
     fontSize: 16,
     color: colors.text,
+    flex: 1,
   },
   placeholder: {
     color: colors.grey,
   },
-  tradeList: {
+  pickerOptions: {
     backgroundColor: colors.backgroundAlt,
-    borderWidth: 1,
-    borderColor: colors.grey,
     borderRadius: 8,
     marginTop: 5,
+    borderWidth: 1,
+    borderColor: colors.grey,
     maxHeight: 200,
   },
-  tradeItem: {
+  pickerScroll: {
+    maxHeight: 200,
+  },
+  pickerOption: {
     paddingHorizontal: 15,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.background,
+    borderBottomColor: colors.grey,
   },
-  tradeItemText: {
+  pickerOptionText: {
     fontSize: 16,
     color: colors.text,
+  },
+  contactNote: {
+    fontSize: 12,
+    color: colors.grey,
+    fontStyle: 'italic',
+    marginTop: -10,
+    marginBottom: 20,
+  },
+  infoBox: {
+    flexDirection: 'row',
+    backgroundColor: colors.backgroundAlt,
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 30,
+    alignItems: 'flex-start',
+  },
+  infoText: {
+    fontSize: 14,
+    color: colors.text,
+    marginLeft: 10,
+    flex: 1,
+    lineHeight: 20,
   },
   submitButton: {
     backgroundColor: colors.primary,
     borderRadius: 8,
     paddingVertical: 15,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
+    justifyContent: 'center',
+    gap: 10,
   },
   submitButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
+    color: 'white',
   },
 });

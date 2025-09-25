@@ -1,19 +1,21 @@
 
-import { Tradesperson, ServiceRequest } from '../types';
+import { Tradesperson, ServiceRequest, TRADES } from '../types';
 
 // Simple in-memory storage for demo purposes
 // In a real app, you would use AsyncStorage or a database
 class DataStorage {
   private tradespeople: Tradesperson[] = [];
   private requests: ServiceRequest[] = [];
+  private tradeCategories: string[] = [...TRADES]; // Initialize with default trades
 
   // Tradespeople methods
-  addTradesperson(tradesperson: Omit<Tradesperson, 'id' | 'createdAt' | 'validated'>): Tradesperson {
+  addTradesperson(tradesperson: Omit<Tradesperson, 'id' | 'createdAt' | 'validated' | 'suspended'>): Tradesperson {
     const newTradesperson: Tradesperson = {
       ...tradesperson,
       id: Date.now().toString(),
       createdAt: new Date(),
       validated: false, // Par défaut, les artisans ne sont pas validés
+      suspended: false, // Par défaut, les artisans ne sont pas suspendus
     };
     this.tradespeople.push(newTradesperson);
     console.log('Added tradesperson (awaiting validation):', newTradesperson);
@@ -24,7 +26,7 @@ class DataStorage {
     return this.tradespeople;
   }
 
-  // Retourne seulement les artisans validés pour la recherche publique
+  // Retourne seulement les artisans validés et non suspendus pour la recherche publique
   getValidatedTradespeople(): Tradesperson[] {
     return this.tradespeople.filter(person => person.validated);
   }
@@ -35,9 +37,9 @@ class DataStorage {
   }
 
   searchTradespeople(trade?: string, city?: string): Tradesperson[] {
-    // Seuls les artisans validés apparaissent dans les résultats de recherche
+    // Seuls les artisans validés et non suspendus apparaissent dans les résultats de recherche
     return this.tradespeople.filter(person => {
-      if (!person.validated) return false; // Filtrer les non-validés
+      if (!person.validated || person.suspended) return false; // Filtrer les non-validés et suspendus
       
       const matchesTrade = !trade || person.trade.toLowerCase().includes(trade.toLowerCase());
       const matchesCity = !city || person.city.toLowerCase().includes(city.toLowerCase());
@@ -46,8 +48,8 @@ class DataStorage {
   }
 
   getTradesperonByCode(code: string): Tradesperson | undefined {
-    // Seuls les artisans validés peuvent être trouvés par code
-    return this.tradespeople.find(person => person.code === code && person.validated);
+    // Seuls les artisans validés et non suspendus peuvent être trouvés par code
+    return this.tradespeople.find(person => person.code === code && person.validated && !person.suspended);
   }
 
   // Nouvelle méthode pour valider un artisan
@@ -67,6 +69,64 @@ class DataStorage {
     if (index !== -1) {
       const rejected = this.tradespeople.splice(index, 1)[0];
       console.log('Tradesperson rejected and removed:', rejected);
+      return true;
+    }
+    return false;
+  }
+
+  // Nouvelle méthode pour mettre à jour un profil d'artisan
+  updateTradesperson(id: string, updates: Partial<Tradesperson>): boolean {
+    const tradesperson = this.tradespeople.find(person => person.id === id);
+    if (tradesperson) {
+      Object.assign(tradesperson, updates);
+      console.log('Tradesperson updated:', tradesperson);
+      return true;
+    }
+    return false;
+  }
+
+  // Nouvelle méthode pour supprimer un profil d'artisan
+  deleteTradesperson(id: string): boolean {
+    const index = this.tradespeople.findIndex(person => person.id === id);
+    if (index !== -1) {
+      const deleted = this.tradespeople.splice(index, 1)[0];
+      console.log('Tradesperson deleted:', deleted);
+      return true;
+    }
+    return false;
+  }
+
+  // Nouvelle méthode pour suspendre/réactiver un profil d'artisan
+  toggleSuspendTradesperson(id: string): boolean {
+    const tradesperson = this.tradespeople.find(person => person.id === id);
+    if (tradesperson) {
+      tradesperson.suspended = !tradesperson.suspended;
+      console.log('Tradesperson suspension toggled:', tradesperson);
+      return true;
+    }
+    return false;
+  }
+
+  // Trade categories management
+  getTradeCategories(): string[] {
+    return [...this.tradeCategories];
+  }
+
+  addTradeCategory(category: string): boolean {
+    const trimmedCategory = category.trim();
+    if (trimmedCategory && !this.tradeCategories.includes(trimmedCategory)) {
+      this.tradeCategories.push(trimmedCategory);
+      console.log('Trade category added:', trimmedCategory);
+      return true;
+    }
+    return false;
+  }
+
+  removeTradeCategory(category: string): boolean {
+    const index = this.tradeCategories.indexOf(category);
+    if (index !== -1) {
+      this.tradeCategories.splice(index, 1);
+      console.log('Trade category removed:', category);
       return true;
     }
     return false;

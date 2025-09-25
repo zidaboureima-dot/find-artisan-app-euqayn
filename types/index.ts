@@ -9,7 +9,8 @@ export interface Tradesperson {
   phone?: string;
   email?: string;
   createdAt: Date;
-  validated: boolean; // Nouveau champ pour la validation
+  validated: boolean; // Champ pour la validation
+  suspended: boolean; // Nouveau champ pour la suspension
 }
 
 export interface ServiceRequest {

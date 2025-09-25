@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -21,8 +22,14 @@ import { useAuth } from '../contexts/AuthContext';
 export default function RequestsScreen() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [pendingTradespeople, setPendingTradespeople] = useState<Tradesperson[]>([]);
+  const [validatedTradespeople, setValidatedTradespeople] = useState<Tradesperson[]>([]);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [activeTab, setActiveTab] = useState<'requests' | 'registrations'>('requests');
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<Tradesperson | null>(null);
+  const [editingProfile, setEditingProfile] = useState<Partial<Tradesperson>>({});
+  const [newCategory, setNewCategory] = useState('');
+  const [activeTab, setActiveTab] = useState<'requests' | 'registrations' | 'profiles' | 'categories'>('requests');
   const { isAdmin, logout } = useAuth();
 
   useEffect(() => {
@@ -36,7 +43,11 @@ export default function RequestsScreen() {
     setRequests(dataStorage.getAllRequests());
     // Load pending tradesperson registrations
     setPendingTradespeople(dataStorage.getPendingTradespeople());
-    console.log('Loaded pending registrations:', dataStorage.getPendingTradespeople().length);
+    // Load validated tradespeople for profile management
+    setValidatedTradespeople(dataStorage.getValidatedTradespeople());
+    console.log('Loaded data - Requests:', dataStorage.getAllRequests().length, 
+                'Pending:', dataStorage.getPendingTradespeople().length,
+                'Validated:', dataStorage.getValidatedTradespeople().length);
   };
 
   const handleValidateRegistration = (tradesperson: Tradesperson) => {
@@ -83,6 +94,124 @@ export default function RequestsScreen() {
               loadData(); // Refresh data
             } else {
               Alert.alert('Erreur', 'Erreur lors du rejet');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleEditProfile = (profile: Tradesperson) => {
+    setSelectedProfile(profile);
+    setEditingProfile({ ...profile });
+    setShowProfileEditor(true);
+  };
+
+  const handleSaveProfile = () => {
+    if (!selectedProfile || !editingProfile.name || !editingProfile.trade || !editingProfile.city) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    const success = dataStorage.updateTradesperson(selectedProfile.id, editingProfile);
+    if (success) {
+      Alert.alert('Succès', 'Le profil a été mis à jour avec succès !');
+      setShowProfileEditor(false);
+      setSelectedProfile(null);
+      setEditingProfile({});
+      loadData();
+    } else {
+      Alert.alert('Erreur', 'Erreur lors de la mise à jour du profil');
+    }
+  };
+
+  const handleDeleteProfile = (profile: Tradesperson) => {
+    Alert.alert(
+      'Supprimer le profil',
+      `Voulez-vous supprimer définitivement le profil de ${profile.name} ? Cette action est irréversible.`,
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: () => {
+            const success = dataStorage.deleteTradesperson(profile.id);
+            if (success) {
+              Alert.alert('Profil supprimé', 'Le profil a été supprimé avec succès.');
+              loadData();
+            } else {
+              Alert.alert('Erreur', 'Erreur lors de la suppression');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleSuspendProfile = (profile: Tradesperson) => {
+    const action = profile.suspended ? 'réactiver' : 'suspendre';
+    const actionPast = profile.suspended ? 'réactivé' : 'suspendu';
+    
+    Alert.alert(
+      `${action.charAt(0).toUpperCase() + action.slice(1)} le profil`,
+      `Voulez-vous ${action} le profil de ${profile.name} ?`,
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        {
+          text: action.charAt(0).toUpperCase() + action.slice(1),
+          onPress: () => {
+            const success = dataStorage.toggleSuspendTradesperson(profile.id);
+            if (success) {
+              Alert.alert('Succès', `Le profil a été ${actionPast} avec succès.`);
+              loadData();
+            } else {
+              Alert.alert('Erreur', `Erreur lors de la ${action}`);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleAddCategory = () => {
+    if (!newCategory.trim()) {
+      Alert.alert('Erreur', 'Veuillez saisir un nom de catégorie');
+      return;
+    }
+
+    const success = dataStorage.addTradeCategory(newCategory.trim());
+    if (success) {
+      Alert.alert('Succès', 'La catégorie a été ajoutée avec succès !');
+      setNewCategory('');
+    } else {
+      Alert.alert('Erreur', 'Cette catégorie existe déjà');
+    }
+  };
+
+  const handleRemoveCategory = (category: string) => {
+    Alert.alert(
+      'Supprimer la catégorie',
+      `Voulez-vous supprimer la catégorie "${category}" ? Cette action est irréversible.`,
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: () => {
+            const success = dataStorage.removeTradeCategory(category);
+            if (success) {
+              Alert.alert('Catégorie supprimée', 'La catégorie a été supprimée avec succès.');
+            } else {
+              Alert.alert('Erreur', 'Erreur lors de la suppression');
             }
           },
         },
@@ -177,7 +306,7 @@ export default function RequestsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Mes Demandes</Text>
+        <Text style={styles.headerTitle}>Administration</Text>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
           <Icon name="log-out" size={20} color={colors.text} />
         </TouchableOpacity>
@@ -189,54 +318,90 @@ export default function RequestsScreen() {
       </View>
 
       {/* Tab Navigation */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'requests' && styles.activeTab]}
-          onPress={() => setActiveTab('requests')}
-        >
-          <Icon 
-            name="mail" 
-            size={20} 
-            color={activeTab === 'requests' ? colors.primary : colors.grey} 
-          />
-          <Text style={[
-            styles.tabText, 
-            activeTab === 'requests' && styles.activeTabText
-          ]}>
-            Demandes de Service
-          </Text>
-          {requests.length > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{requests.length}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabScrollContainer}>
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'requests' && styles.activeTab]}
+            onPress={() => setActiveTab('requests')}
+          >
+            <Icon 
+              name="mail" 
+              size={18} 
+              color={activeTab === 'requests' ? colors.primary : colors.grey} 
+            />
+            <Text style={[
+              styles.tabText, 
+              activeTab === 'requests' && styles.activeTabText
+            ]}>
+              Demandes
+            </Text>
+            {requests.length > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{requests.length}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'registrations' && styles.activeTab]}
-          onPress={() => setActiveTab('registrations')}
-        >
-          <Icon 
-            name="person-add" 
-            size={20} 
-            color={activeTab === 'registrations' ? colors.primary : colors.grey} 
-          />
-          <Text style={[
-            styles.tabText, 
-            activeTab === 'registrations' && styles.activeTabText
-          ]}>
-            Nouvelles Inscriptions
-          </Text>
-          {pendingTradespeople.length > 0 && (
-            <View style={[styles.badge, styles.urgentBadge]}>
-              <Text style={styles.badgeText}>{pendingTradespeople.length}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'registrations' && styles.activeTab]}
+            onPress={() => setActiveTab('registrations')}
+          >
+            <Icon 
+              name="person-add" 
+              size={18} 
+              color={activeTab === 'registrations' ? colors.primary : colors.grey} 
+            />
+            <Text style={[
+              styles.tabText, 
+              activeTab === 'registrations' && styles.activeTabText
+            ]}>
+              Inscriptions
+            </Text>
+            {pendingTradespeople.length > 0 && (
+              <View style={[styles.badge, styles.urgentBadge]}>
+                <Text style={styles.badgeText}>{pendingTradespeople.length}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'profiles' && styles.activeTab]}
+            onPress={() => setActiveTab('profiles')}
+          >
+            <Icon 
+              name="people" 
+              size={18} 
+              color={activeTab === 'profiles' ? colors.primary : colors.grey} 
+            />
+            <Text style={[
+              styles.tabText, 
+              activeTab === 'profiles' && styles.activeTabText
+            ]}>
+              Profils
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'categories' && styles.activeTab]}
+            onPress={() => setActiveTab('categories')}
+          >
+            <Icon 
+              name="list" 
+              size={18} 
+              color={activeTab === 'categories' ? colors.primary : colors.grey} 
+            />
+            <Text style={[
+              styles.tabText, 
+              activeTab === 'categories' && styles.activeTabText
+            ]}>
+              Catégories
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {activeTab === 'requests' ? (
+        {activeTab === 'requests' && (
           // Service Requests Tab
           <>
             <Text style={styles.resultsTitle}>
@@ -292,7 +457,9 @@ export default function RequestsScreen() {
               </View>
             )}
           </>
-        ) : (
+        )}
+
+        {activeTab === 'registrations' && (
           // Pending Registrations Tab
           <>
             <Text style={styles.resultsTitle}>
@@ -367,7 +534,251 @@ export default function RequestsScreen() {
             )}
           </>
         )}
+
+        {activeTab === 'profiles' && (
+          // Profile Management Tab
+          <>
+            <Text style={styles.resultsTitle}>
+              {validatedTradespeople.length} profil{validatedTradespeople.length > 1 ? 's' : ''} validé{validatedTradespeople.length > 1 ? 's' : ''}
+            </Text>
+
+            {validatedTradespeople.map((tradesperson) => (
+              <View key={tradesperson.id} style={[
+                styles.profileCard,
+                tradesperson.suspended && styles.suspendedCard
+              ]}>
+                <View style={styles.cardHeader}>
+                  <View style={styles.cardInfo}>
+                    <View style={styles.profileNameRow}>
+                      <Text style={styles.tradespersonName}>{tradesperson.name}</Text>
+                      {tradesperson.suspended && (
+                        <View style={styles.suspendedBadge}>
+                          <Text style={styles.suspendedBadgeText}>Suspendu</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={styles.tradespersonTrade}>{tradesperson.trade}</Text>
+                    <Text style={styles.tradespersonCity}>{tradesperson.city}</Text>
+                  </View>
+                  <View style={styles.codeContainer}>
+                    <Text style={styles.codeLabel}>Code</Text>
+                    <Text style={styles.codeValue}>{tradesperson.code}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.contactInfo}>
+                  {tradesperson.phone && (
+                    <View style={styles.contactItem}>
+                      <Icon name="call" size={16} color={colors.grey} />
+                      <Text style={styles.contactText}>{tradesperson.phone}</Text>
+                    </View>
+                  )}
+                  {tradesperson.email && (
+                    <View style={styles.contactItem}>
+                      <Icon name="mail" size={16} color={colors.grey} />
+                      <Text style={styles.contactText}>{tradesperson.email}</Text>
+                    </View>
+                  )}
+                </View>
+
+                <View style={styles.profileActions}>
+                  <TouchableOpacity
+                    style={styles.editButton}
+                    onPress={() => handleEditProfile(tradesperson)}
+                  >
+                    <Icon name="create" size={16} color={colors.primary} />
+                    <Text style={styles.editButtonText}>Modifier</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.suspendButton, tradesperson.suspended && styles.reactivateButton]}
+                    onPress={() => handleSuspendProfile(tradesperson)}
+                  >
+                    <Icon 
+                      name={tradesperson.suspended ? "play" : "pause"} 
+                      size={16} 
+                      color={tradesperson.suspended ? "#4CAF50" : "#FF9800"} 
+                    />
+                    <Text style={[
+                      styles.suspendButtonText,
+                      tradesperson.suspended && styles.reactivateButtonText
+                    ]}>
+                      {tradesperson.suspended ? 'Réactiver' : 'Suspendre'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => handleDeleteProfile(tradesperson)}
+                  >
+                    <Icon name="trash" size={16} color="#F44336" />
+                    <Text style={styles.deleteButtonText}>Supprimer</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+
+            {validatedTradespeople.length === 0 && (
+              <View style={styles.noRequests}>
+                <Icon name="people-outline" size={48} color={colors.grey} />
+                <Text style={styles.noRequestsText}>Aucun profil validé</Text>
+                <Text style={styles.noRequestsSubtext}>
+                  Les profils validés apparaîtront ici pour gestion
+                </Text>
+              </View>
+            )}
+          </>
+        )}
+
+        {activeTab === 'categories' && (
+          // Category Management Tab
+          <>
+            <Text style={styles.resultsTitle}>Gestion des catégories de métiers</Text>
+            
+            <View style={styles.addCategoryContainer}>
+              <TextInput
+                style={styles.categoryInput}
+                placeholder="Nouvelle catégorie de métier"
+                value={newCategory}
+                onChangeText={setNewCategory}
+                placeholderTextColor={colors.grey}
+              />
+              <TouchableOpacity
+                style={styles.addCategoryButton}
+                onPress={handleAddCategory}
+              >
+                <Icon name="add" size={20} color="white" />
+                <Text style={styles.addCategoryButtonText}>Ajouter</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.categoryListTitle}>
+              {dataStorage.getTradeCategories().length} catégorie{dataStorage.getTradeCategories().length > 1 ? 's' : ''} disponible{dataStorage.getTradeCategories().length > 1 ? 's' : ''}
+            </Text>
+
+            {dataStorage.getTradeCategories().map((category, index) => (
+              <View key={index} style={styles.categoryCard}>
+                <View style={styles.categoryInfo}>
+                  <Icon name="hammer" size={20} color={colors.accent} />
+                  <Text style={styles.categoryName}>{category}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.removeCategoryButton}
+                  onPress={() => handleRemoveCategory(category)}
+                >
+                  <Icon name="close" size={18} color="#F44336" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </>
+        )}
       </ScrollView>
+
+      {/* Profile Editor Bottom Sheet */}
+      <SimpleBottomSheet
+        isVisible={showProfileEditor}
+        onClose={() => {
+          setShowProfileEditor(false);
+          setSelectedProfile(null);
+          setEditingProfile({});
+        }}
+      >
+        <View style={styles.bottomSheetContent}>
+          <Text style={styles.bottomSheetTitle}>Modifier le profil</Text>
+          
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Nom *</Text>
+            <TextInput
+              style={styles.formInput}
+              value={editingProfile.name || ''}
+              onChangeText={(text) => setEditingProfile({...editingProfile, name: text})}
+              placeholder="Nom complet"
+              placeholderTextColor={colors.grey}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Métier *</Text>
+            <TextInput
+              style={styles.formInput}
+              value={editingProfile.trade || ''}
+              onChangeText={(text) => setEditingProfile({...editingProfile, trade: text})}
+              placeholder="Métier"
+              placeholderTextColor={colors.grey}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Ville *</Text>
+            <TextInput
+              style={styles.formInput}
+              value={editingProfile.city || ''}
+              onChangeText={(text) => setEditingProfile({...editingProfile, city: text})}
+              placeholder="Ville"
+              placeholderTextColor={colors.grey}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Téléphone</Text>
+            <TextInput
+              style={styles.formInput}
+              value={editingProfile.phone || ''}
+              onChangeText={(text) => setEditingProfile({...editingProfile, phone: text})}
+              placeholder="Numéro de téléphone"
+              placeholderTextColor={colors.grey}
+              keyboardType="phone-pad"
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Email</Text>
+            <TextInput
+              style={styles.formInput}
+              value={editingProfile.email || ''}
+              onChangeText={(text) => setEditingProfile({...editingProfile, email: text})}
+              placeholder="Adresse email"
+              placeholderTextColor={colors.grey}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Résumé du profil</Text>
+            <TextInput
+              style={[styles.formInput, styles.textArea]}
+              value={editingProfile.profileSummary || ''}
+              onChangeText={(text) => setEditingProfile({...editingProfile, profileSummary: text})}
+              placeholder="Description des compétences et expériences"
+              placeholderTextColor={colors.grey}
+              multiline
+              numberOfLines={4}
+            />
+          </View>
+
+          <View style={styles.bottomSheetActions}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => {
+                setShowProfileEditor(false);
+                setSelectedProfile(null);
+                setEditingProfile({});
+              }}
+            >
+              <Text style={styles.cancelButtonText}>Annuler</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={handleSaveProfile}
+            >
+              <Icon name="checkmark" size={18} color="white" />
+              <Text style={styles.saveButtonText}>Enregistrer</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SimpleBottomSheet>
     </SafeAreaView>
   );
 }
@@ -411,23 +822,25 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     marginLeft: 5,
   },
+  tabScrollContainer: {
+    marginTop: 15,
+  },
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: colors.backgroundAlt,
     marginHorizontal: 20,
-    marginTop: 15,
     borderRadius: 12,
     padding: 4,
   },
   tab: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
     borderRadius: 8,
     gap: 6,
+    minWidth: 100,
   },
   activeTab: {
     backgroundColor: colors.background,
@@ -441,7 +854,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   tabText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500',
     color: colors.grey,
     textAlign: 'center',
@@ -453,8 +866,8 @@ const styles = StyleSheet.create({
   badge: {
     backgroundColor: colors.accent,
     borderRadius: 10,
-    minWidth: 20,
-    height: 20,
+    minWidth: 18,
+    height: 18,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 4,
@@ -463,7 +876,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF6B6B',
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     color: 'white',
   },
@@ -531,6 +944,22 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#FF6B6B',
   },
+  profileCard: {
+    backgroundColor: colors.backgroundAlt,
+    marginHorizontal: 20,
+    marginBottom: 15,
+    borderRadius: 12,
+    padding: 15,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
+  },
+  suspendedCard: {
+    borderColor: '#FF9800',
+    borderLeftColor: '#FF9800',
+    opacity: 0.7,
+  },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -557,6 +986,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.text,
     marginBottom: 4,
+  },
+  profileNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  suspendedBadge: {
+    backgroundColor: '#FF9800',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginLeft: 10,
+  },
+  suspendedBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: 'white',
   },
   tradespersonTrade: {
     fontSize: 14,
@@ -684,6 +1130,128 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'white',
   },
+  profileActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  editButton: {
+    flex: 1,
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  editButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  suspendButton: {
+    flex: 1,
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#FF9800',
+  },
+  suspendButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#FF9800',
+  },
+  reactivateButton: {
+    borderColor: '#4CAF50',
+  },
+  reactivateButtonText: {
+    color: '#4CAF50',
+  },
+  deleteButton: {
+    flex: 1,
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#F44336',
+  },
+  deleteButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#F44336',
+  },
+  addCategoryContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginBottom: 20,
+    gap: 12,
+  },
+  categoryInput: {
+    flex: 1,
+    backgroundColor: colors.backgroundAlt,
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: colors.text,
+    borderWidth: 1,
+    borderColor: colors.grey,
+  },
+  addCategoryButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  addCategoryButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'white',
+  },
+  categoryListTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.grey,
+    paddingHorizontal: 20,
+    marginBottom: 15,
+  },
+  categoryCard: {
+    backgroundColor: colors.backgroundAlt,
+    marginHorizontal: 20,
+    marginBottom: 10,
+    borderRadius: 8,
+    padding: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  categoryInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  categoryName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.text,
+  },
+  removeCategoryButton: {
+    padding: 8,
+  },
   noRequests: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -703,5 +1271,71 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 30,
+  },
+  bottomSheetContent: {
+    padding: 20,
+  },
+  bottomSheetTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  formGroup: {
+    marginBottom: 20,
+  },
+  formLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 8,
+  },
+  formInput: {
+    backgroundColor: colors.backgroundAlt,
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: colors.text,
+    borderWidth: 1,
+    borderColor: colors.grey,
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  bottomSheetActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 10,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: colors.backgroundAlt,
+    borderRadius: 8,
+    paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.grey,
+  },
+  saveButton: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
   },
 });
