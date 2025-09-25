@@ -1,13 +1,25 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 import { commonStyles, colors } from '../styles/commonStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import Icon from '../components/Icon';
 import Logo from '../components/Logo';
+import { dataStorage } from '../data/storage';
 
 export default function MainScreen() {
+  const [expertCount, setExpertCount] = useState(0);
+
+  useEffect(() => {
+    // Initialize sample data
+    dataStorage.initializeSampleData();
+    
+    // Get the count of validated experts
+    const validatedExperts = dataStorage.getValidatedTradespeople();
+    setExpertCount(validatedExperts.length);
+  }, []);
+
   return (
     <SafeAreaView style={commonStyles.wrapper}>
       <View style={styles.container}>
@@ -72,6 +84,15 @@ export default function MainScreen() {
           <Text style={styles.footerText}>
             Connectez-vous avec des artisans qualifiés dans votre région
           </Text>
+          
+          <View style={styles.copyrightContainer}>
+            <Text style={styles.copyrightText}>
+              Copyright SSP @2025
+            </Text>
+            <Text style={styles.expertCountText}>
+              {expertCount} experts enregistrés
+            </Text>
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -143,5 +164,22 @@ const styles = StyleSheet.create({
     color: colors.grey,
     textAlign: 'center',
     lineHeight: 20,
+    marginBottom: 20,
+  },
+  copyrightContainer: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  copyrightText: {
+    fontSize: 12,
+    color: colors.grey,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  expertCountText: {
+    fontSize: 12,
+    color: colors.accent,
+    textAlign: 'center',
+    fontWeight: '600',
   },
 });
