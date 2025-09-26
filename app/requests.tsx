@@ -38,11 +38,13 @@ export default function RequestsScreen() {
 
   useEffect(() => {
     if (isAdmin) {
+      console.log('Admin logged in, loading data...');
       loadData();
     }
   }, [isAdmin]);
 
   const loadData = () => {
+    console.log('Loading admin data...');
     // Load all requests for admin
     const allRequests = dataStorage.getAllRequests();
     setRequests(allRequests);
@@ -61,6 +63,7 @@ export default function RequestsScreen() {
   };
 
   const handleValidateRegistration = (tradesperson: Tradesperson) => {
+    console.log('Validate button pressed for tradesperson:', tradesperson.id);
     Alert.alert(
       'Valider l\'inscription',
       `Voulez-vous valider l'inscription de ${tradesperson.name} (${tradesperson.trade}) ?`,
@@ -68,6 +71,7 @@ export default function RequestsScreen() {
         {
           text: 'Annuler',
           style: 'cancel',
+          onPress: () => console.log('Validation cancelled')
         },
         {
           text: 'Valider',
@@ -92,6 +96,7 @@ export default function RequestsScreen() {
   };
 
   const handleRejectRegistration = (tradesperson: Tradesperson) => {
+    console.log('Reject button pressed for tradesperson:', tradesperson.id);
     Alert.alert(
       'Rejeter l\'inscription',
       `Voulez-vous rejeter l'inscription de ${tradesperson.name} ? Cette action est irréversible.`,
@@ -99,6 +104,7 @@ export default function RequestsScreen() {
         {
           text: 'Annuler',
           style: 'cancel',
+          onPress: () => console.log('Rejection cancelled')
         },
         {
           text: 'Rejeter',
@@ -124,30 +130,37 @@ export default function RequestsScreen() {
   };
 
   const handleEditProfile = (profile: Tradesperson) => {
+    console.log('Edit button pressed for profile:', profile.id);
     setSelectedProfile(profile);
     setEditingProfile({ ...profile });
     setShowProfileEditor(true);
   };
 
   const handleSaveProfile = () => {
+    console.log('Save profile button pressed');
     if (!selectedProfile || !editingProfile.name || !editingProfile.trade || !editingProfile.city) {
+      console.log('Save profile validation failed');
       Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires');
       return;
     }
 
+    console.log('Saving profile changes for:', selectedProfile.id);
     const success = dataStorage.updateTradesperson(selectedProfile.id, editingProfile);
     if (success) {
+      console.log('Profile save successful');
       Alert.alert('Succès', 'Le profil a été mis à jour avec succès !');
       setShowProfileEditor(false);
       setSelectedProfile(null);
       setEditingProfile({});
       loadData();
     } else {
+      console.log('Profile save failed');
       Alert.alert('Erreur', 'Erreur lors de la mise à jour du profil');
     }
   };
 
   const handleDeleteProfile = (profile: Tradesperson) => {
+    console.log('Delete button pressed for profile:', profile.id);
     Alert.alert(
       'Supprimer le profil',
       `Voulez-vous supprimer définitivement le profil de ${profile.name} ? Cette action est irréversible.`,
@@ -155,16 +168,20 @@ export default function RequestsScreen() {
         {
           text: 'Annuler',
           style: 'cancel',
+          onPress: () => console.log('Delete cancelled')
         },
         {
           text: 'Supprimer',
           style: 'destructive',
           onPress: () => {
+            console.log('Deleting profile:', profile.id);
             const success = dataStorage.deleteTradesperson(profile.id);
             if (success) {
+              console.log('Delete successful');
               Alert.alert('Profil supprimé', 'Le profil a été supprimé avec succès.');
               loadData();
             } else {
+              console.log('Delete failed');
               Alert.alert('Erreur', 'Erreur lors de la suppression');
             }
           },
@@ -176,6 +193,7 @@ export default function RequestsScreen() {
   const handleSuspendProfile = (profile: Tradesperson) => {
     const action = profile.suspended ? 'réactiver' : 'suspendre';
     const actionPast = profile.suspended ? 'réactivé' : 'suspendu';
+    console.log(`${action} button pressed for profile:`, profile.id);
     
     Alert.alert(
       `${action.charAt(0).toUpperCase() + action.slice(1)} le profil`,
@@ -184,15 +202,19 @@ export default function RequestsScreen() {
         {
           text: 'Annuler',
           style: 'cancel',
+          onPress: () => console.log(`${action} cancelled`)
         },
         {
           text: action.charAt(0).toUpperCase() + action.slice(1),
           onPress: () => {
+            console.log(`${action} profile:`, profile.id);
             const success = dataStorage.toggleSuspendTradesperson(profile.id);
             if (success) {
+              console.log(`${action} successful`);
               Alert.alert('Succès', `Le profil a été ${actionPast} avec succès.`);
               loadData();
             } else {
+              console.log(`${action} failed`);
               Alert.alert('Erreur', `Erreur lors de la ${action}`);
             }
           },
@@ -202,21 +224,27 @@ export default function RequestsScreen() {
   };
 
   const handleAddCategory = () => {
+    console.log('Add category button pressed with value:', newCategory);
     if (!newCategory.trim()) {
+      console.log('Add category validation failed: empty category');
       Alert.alert('Erreur', 'Veuillez saisir un nom de catégorie');
       return;
     }
 
+    console.log('Adding category:', newCategory.trim());
     const success = dataStorage.addTradeCategory(newCategory.trim());
     if (success) {
+      console.log('Add category successful');
       Alert.alert('Succès', 'La catégorie a été ajoutée avec succès !');
       setNewCategory('');
     } else {
+      console.log('Add category failed: category already exists');
       Alert.alert('Erreur', 'Cette catégorie existe déjà');
     }
   };
 
   const handleRemoveCategory = (category: string) => {
+    console.log('Remove category button pressed for:', category);
     Alert.alert(
       'Supprimer la catégorie',
       `Voulez-vous supprimer la catégorie "${category}" ? Cette action est irréversible.`,
@@ -224,15 +252,19 @@ export default function RequestsScreen() {
         {
           text: 'Annuler',
           style: 'cancel',
+          onPress: () => console.log('Remove category cancelled')
         },
         {
           text: 'Supprimer',
           style: 'destructive',
           onPress: () => {
+            console.log('Removing category:', category);
             const success = dataStorage.removeTradeCategory(category);
             if (success) {
+              console.log('Remove category successful');
               Alert.alert('Catégorie supprimée', 'La catégorie a été supprimée avec succès.');
             } else {
+              console.log('Remove category failed');
               Alert.alert('Erreur', 'Erreur lors de la suppression');
             }
           },
@@ -278,10 +310,12 @@ export default function RequestsScreen() {
   };
 
   const handleAdminLogin = () => {
+    console.log('Admin login button pressed');
     setShowAdminLogin(true);
   };
 
   const handleLogout = () => {
+    console.log('Logout button pressed');
     logout();
     router.back();
   };
@@ -291,7 +325,10 @@ export default function RequestsScreen() {
     return (
       <SafeAreaView style={commonStyles.wrapper}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={() => {
+            console.log('Back button pressed from access denied screen');
+            router.back();
+          }} style={styles.backButton}>
             <Icon name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Mes Demandes</Text>
@@ -313,7 +350,10 @@ export default function RequestsScreen() {
 
         <SimpleBottomSheet
           isVisible={showAdminLogin}
-          onClose={() => setShowAdminLogin(false)}
+          onClose={() => {
+            console.log('Admin login bottom sheet closed');
+            setShowAdminLogin(false);
+          }}
         >
           <AdminLogin onClose={() => setShowAdminLogin(false)} />
         </SimpleBottomSheet>
@@ -325,7 +365,10 @@ export default function RequestsScreen() {
   return (
     <SafeAreaView style={commonStyles.wrapper}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => {
+          console.log('Back button pressed from admin screen');
+          router.back();
+        }} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Administration</Text>
@@ -349,7 +392,10 @@ export default function RequestsScreen() {
         <View style={styles.tabContainer}>
           <TouchableOpacity
             style={[styles.tab, activeTab === 'requests' && styles.activeTab]}
-            onPress={() => setActiveTab('requests')}
+            onPress={() => {
+              console.log('Requests tab pressed');
+              setActiveTab('requests');
+            }}
           >
             <Icon 
               name="mail" 
@@ -372,7 +418,10 @@ export default function RequestsScreen() {
 
           <TouchableOpacity
             style={[styles.tab, activeTab === 'registrations' && styles.activeTab]}
-            onPress={() => setActiveTab('registrations')}
+            onPress={() => {
+              console.log('Registrations tab pressed');
+              setActiveTab('registrations');
+            }}
           >
             <Icon 
               name="person-add" 
@@ -395,7 +444,10 @@ export default function RequestsScreen() {
 
           <TouchableOpacity
             style={[styles.tab, activeTab === 'profiles' && styles.activeTab]}
-            onPress={() => setActiveTab('profiles')}
+            onPress={() => {
+              console.log('Profiles tab pressed');
+              setActiveTab('profiles');
+            }}
           >
             <Icon 
               name="people" 
@@ -413,7 +465,10 @@ export default function RequestsScreen() {
 
           <TouchableOpacity
             style={[styles.tab, activeTab === 'categories' && styles.activeTab]}
-            onPress={() => setActiveTab('categories')}
+            onPress={() => {
+              console.log('Categories tab pressed');
+              setActiveTab('categories');
+            }}
           >
             <Icon 
               name="list" 
@@ -686,7 +741,10 @@ export default function RequestsScreen() {
                 style={[styles.categoryInput, isSmallScreen && styles.smallCategoryInput]}
                 placeholder="Nouvelle catégorie de métier"
                 value={newCategory}
-                onChangeText={setNewCategory}
+                onChangeText={(text) => {
+                  console.log('Category input changed:', text);
+                  setNewCategory(text);
+                }}
                 placeholderTextColor={colors.grey}
               />
               <TouchableOpacity
@@ -726,6 +784,7 @@ export default function RequestsScreen() {
       <SimpleBottomSheet
         isVisible={showProfileEditor}
         onClose={() => {
+          console.log('Profile editor bottom sheet closed');
           setShowProfileEditor(false);
           setSelectedProfile(null);
           setEditingProfile({});
@@ -739,7 +798,10 @@ export default function RequestsScreen() {
             <TextInput
               style={styles.formInput}
               value={editingProfile.name || ''}
-              onChangeText={(text) => setEditingProfile({...editingProfile, name: text})}
+              onChangeText={(text) => {
+                console.log('Editing profile name:', text);
+                setEditingProfile({...editingProfile, name: text});
+              }}
               placeholder="Nom complet"
               placeholderTextColor={colors.grey}
             />
@@ -750,7 +812,10 @@ export default function RequestsScreen() {
             <TextInput
               style={styles.formInput}
               value={editingProfile.trade || ''}
-              onChangeText={(text) => setEditingProfile({...editingProfile, trade: text})}
+              onChangeText={(text) => {
+                console.log('Editing profile trade:', text);
+                setEditingProfile({...editingProfile, trade: text});
+              }}
               placeholder="Métier"
               placeholderTextColor={colors.grey}
             />
@@ -761,7 +826,10 @@ export default function RequestsScreen() {
             <TextInput
               style={styles.formInput}
               value={editingProfile.city || ''}
-              onChangeText={(text) => setEditingProfile({...editingProfile, city: text})}
+              onChangeText={(text) => {
+                console.log('Editing profile city:', text);
+                setEditingProfile({...editingProfile, city: text});
+              }}
               placeholder="Ville"
               placeholderTextColor={colors.grey}
             />
@@ -772,7 +840,10 @@ export default function RequestsScreen() {
             <TextInput
               style={styles.formInput}
               value={editingProfile.phone || ''}
-              onChangeText={(text) => setEditingProfile({...editingProfile, phone: text})}
+              onChangeText={(text) => {
+                console.log('Editing profile phone:', text);
+                setEditingProfile({...editingProfile, phone: text});
+              }}
               placeholder="Numéro de téléphone"
               placeholderTextColor={colors.grey}
               keyboardType="phone-pad"
@@ -784,7 +855,10 @@ export default function RequestsScreen() {
             <TextInput
               style={styles.formInput}
               value={editingProfile.email || ''}
-              onChangeText={(text) => setEditingProfile({...editingProfile, email: text})}
+              onChangeText={(text) => {
+                console.log('Editing profile email:', text);
+                setEditingProfile({...editingProfile, email: text});
+              }}
               placeholder="Adresse email"
               placeholderTextColor={colors.grey}
               keyboardType="email-address"
@@ -797,7 +871,10 @@ export default function RequestsScreen() {
             <TextInput
               style={[styles.formInput, styles.textArea]}
               value={editingProfile.profileSummary || ''}
-              onChangeText={(text) => setEditingProfile({...editingProfile, profileSummary: text})}
+              onChangeText={(text) => {
+                console.log('Editing profile summary:', text.length, 'characters');
+                setEditingProfile({...editingProfile, profileSummary: text});
+              }}
               placeholder="Description des compétences et expériences"
               placeholderTextColor={colors.grey}
               multiline
@@ -809,6 +886,7 @@ export default function RequestsScreen() {
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => {
+                console.log('Cancel profile edit button pressed');
                 setShowProfileEditor(false);
                 setSelectedProfile(null);
                 setEditingProfile({});

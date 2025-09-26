@@ -28,34 +28,43 @@ export default function RegisterScreen() {
   const [showTradePicker, setShowTradePicker] = useState(false);
 
   const handleSubmit = () => {
+    console.log('Register submit button pressed');
+    console.log('Form data:', formData);
+    
     // Validation
     if (!formData.name.trim()) {
+      console.log('Validation failed: name is empty');
       Alert.alert('Erreur', 'Veuillez saisir votre nom');
       return;
     }
 
     if (!formData.trade.trim()) {
+      console.log('Validation failed: trade is empty');
       Alert.alert('Erreur', 'Veuillez sélectionner votre métier');
       return;
     }
 
     if (!formData.city.trim()) {
+      console.log('Validation failed: city is empty');
       Alert.alert('Erreur', 'Veuillez saisir votre ville');
       return;
     }
 
     if (!formData.profileSummary.trim()) {
+      console.log('Validation failed: profileSummary is empty');
       Alert.alert('Erreur', 'Veuillez saisir un résumé de votre profil');
       return;
     }
 
     if (formData.profileSummary.trim().length > 300) {
+      console.log('Validation failed: profileSummary too long');
       Alert.alert('Erreur', 'Le résumé du profil ne peut pas dépasser 300 caractères');
       return;
     }
 
     // Au moins un moyen de contact requis
     if (!formData.phone.trim() && !formData.email.trim()) {
+      console.log('Validation failed: no contact info provided');
       Alert.alert('Erreur', 'Veuillez fournir au moins un numéro de téléphone ou une adresse email');
       return;
     }
@@ -63,6 +72,7 @@ export default function RegisterScreen() {
     try {
       // Générer un code unique
       const code = `${formData.trade.substring(0, 3).toUpperCase()}${Date.now().toString().slice(-3)}`;
+      console.log('Generated code:', code);
       
       const tradesperson = dataStorage.addTradesperson({
         code,
@@ -74,7 +84,7 @@ export default function RegisterScreen() {
         email: formData.email.trim() || undefined,
       });
 
-      console.log('Tradesperson registered:', tradesperson);
+      console.log('Tradesperson registered successfully:', tradesperson);
 
       Alert.alert(
         'Inscription soumise !',
@@ -83,6 +93,7 @@ export default function RegisterScreen() {
           {
             text: 'OK',
             onPress: () => {
+              console.log('Registration success dialog closed, resetting form');
               // Reset form
               setFormData({
                 name: '',
@@ -104,6 +115,7 @@ export default function RegisterScreen() {
   };
 
   const updateField = (field: string, value: string) => {
+    console.log(`Updating field ${field} with value:`, value);
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -111,6 +123,7 @@ export default function RegisterScreen() {
   };
 
   const selectTrade = (trade: string) => {
+    console.log('Trade selected:', trade);
     updateField('trade', trade);
     setShowTradePicker(false);
   };
@@ -120,7 +133,10 @@ export default function RegisterScreen() {
   return (
     <SafeAreaView style={commonStyles.wrapper}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => {
+          console.log('Back button pressed from register screen');
+          router.back();
+        }} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Inscription Artisan</Text>
@@ -145,7 +161,10 @@ export default function RegisterScreen() {
             <Text style={styles.label}>Métier *</Text>
             <TouchableOpacity
               style={[styles.input, styles.picker]}
-              onPress={() => setShowTradePicker(!showTradePicker)}
+              onPress={() => {
+                console.log('Trade picker pressed, current state:', showTradePicker);
+                setShowTradePicker(!showTradePicker);
+              }}
             >
               <Text style={[styles.pickerText, !formData.trade && styles.placeholder]}>
                 {formData.trade || 'Sélectionnez votre métier'}
@@ -225,7 +244,10 @@ export default function RegisterScreen() {
             <TextInput
               style={[styles.input, styles.textArea]}
               value={formData.profileSummary}
-              onChangeText={(text) => updateField('profileSummary', text)}
+              onChangeText={(text) => {
+                console.log('Profile summary changed, length:', text.length);
+                updateField('profileSummary', text);
+              }}
               placeholder="Décrivez votre expérience, vos spécialités et vos compétences (maximum 300 caractères)"
               placeholderTextColor={colors.grey}
               multiline

@@ -23,6 +23,7 @@ export default function ProfileScreen() {
   const [showRequestForm, setShowRequestForm] = useState(false);
 
   useEffect(() => {
+    console.log('ProfileScreen mounted with code:', code);
     if (code) {
       // Only get validated tradespeople by code
       const person = dataStorage.getTradesperonByCode(code);
@@ -37,7 +38,10 @@ export default function ProfileScreen() {
           [
             {
               text: 'OK',
-              onPress: () => router.back(),
+              onPress: () => {
+                console.log('Profile not available dialog closed, going back');
+                router.back();
+              },
             },
           ]
         );
@@ -49,7 +53,10 @@ export default function ProfileScreen() {
     return (
       <SafeAreaView style={commonStyles.wrapper}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={() => {
+            console.log('Back button pressed from profile loading screen');
+            router.back();
+          }} style={styles.backButton}>
             <Icon name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Profil</Text>
@@ -69,7 +76,10 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={commonStyles.wrapper}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => {
+          console.log('Back button pressed from profile screen');
+          router.back();
+        }} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Profil Professionnel</Text>
@@ -128,7 +138,10 @@ export default function ProfileScreen() {
 
         <TouchableOpacity
           style={styles.requestButton}
-          onPress={() => setShowRequestForm(true)}
+          onPress={() => {
+            console.log('Request button pressed for tradesperson:', tradesperson.code);
+            setShowRequestForm(true);
+          }}
         >
           <Icon name="send" size={20} color="white" />
           <Text style={styles.requestButtonText}>Faire une Demande</Text>
@@ -137,7 +150,10 @@ export default function ProfileScreen() {
 
       <SimpleBottomSheet
         isVisible={showRequestForm}
-        onClose={() => setShowRequestForm(false)}
+        onClose={() => {
+          console.log('Request form bottom sheet closed');
+          setShowRequestForm(false);
+        }}
       >
         <RequestForm
           expertCode={tradesperson.code}

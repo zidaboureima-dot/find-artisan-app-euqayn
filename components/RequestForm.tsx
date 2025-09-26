@@ -29,20 +29,23 @@ export default function RequestForm({ expertCode, expertName, onClose }: Request
   });
 
   const handleSubmit = async () => {
-    console.log('Submit button pressed');
+    console.log('Submit button pressed - handleSubmit called');
     
     // Validation
     if (!formData.requesterName) {
+      console.log('Validation failed: requesterName is empty');
       Alert.alert('Erreur', 'Veuillez saisir votre nom');
       return;
     }
 
     if (!formData.requesterPhone && !formData.requesterEmail) {
+      console.log('Validation failed: no contact info provided');
       Alert.alert('Erreur', 'Veuillez fournir au moins un numéro de téléphone ou un email');
       return;
     }
 
     try {
+      console.log('Saving request to local storage...');
       // Save to local storage first
       dataStorage.addServiceRequest({
         expertCode,
@@ -72,13 +75,15 @@ ${formData.message || 'Aucun message spécifique'}
 Cette demande a été générée automatiquement par l'application.
       `;
 
+      console.log('Checking if mail composer is available...');
       // Check if mail composer is available
       const isAvailable = await MailComposer.isAvailableAsync();
       
       if (isAvailable) {
-        // Open mail composer with pre-filled data
+        console.log('Mail composer available, opening email client...');
+        // Open mail composer with pre-filled data - CORRECTED EMAIL
         await MailComposer.composeAsync({
-          recipients: ['zidabo@hotmail.com'],
+          recipients: ['info@sapsapservices.com'], // CORRECTION: Utiliser la bonne adresse email
           subject: subject,
           body: body,
         });
@@ -89,10 +94,11 @@ Cette demande a été générée automatiquement par l'application.
           [{ text: 'OK', onPress: onClose }]
         );
       } else {
-        // Fallback: show alert with email details
+        console.log('Mail composer not available, showing manual instructions...');
+        // Fallback: show alert with email details - CORRECTED EMAIL
         Alert.alert(
           'Email non disponible',
-          `Veuillez envoyer un email manuellement à zidabo@hotmail.com avec les informations suivantes:\n\nSujet: ${subject}\n\nContenu:\n${body}`,
+          `Veuillez envoyer un email manuellement à info@sapsapservices.com avec les informations suivantes:\n\nSujet: ${subject}\n\nContenu:\n${body}`,
           [{ text: 'OK', onPress: onClose }]
         );
       }
@@ -107,11 +113,13 @@ Cette demande a été générée automatiquement par l'application.
     
     // Same validation as main submit
     if (!formData.requesterName) {
+      console.log('Additional action validation failed: requesterName is empty');
       Alert.alert('Erreur', 'Veuillez saisir votre nom avant d\'envoyer');
       return;
     }
 
     if (!formData.requesterPhone && !formData.requesterEmail) {
+      console.log('Additional action validation failed: no contact info provided');
       Alert.alert('Erreur', 'Veuillez fournir au moins un numéro de téléphone ou un email');
       return;
     }
@@ -121,6 +129,7 @@ Cette demande a été générée automatiquement par l'application.
   };
 
   const updateField = (field: string, value: string) => {
+    console.log(`Updating field ${field} with value: ${value}`);
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -128,7 +137,10 @@ Cette demande a été générée automatiquement par l'application.
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Faire une demande</Text>
-        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+        <TouchableOpacity onPress={() => {
+          console.log('Close button pressed in RequestForm');
+          onClose();
+        }} style={styles.closeButton}>
           <Icon name="close" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
@@ -195,7 +207,10 @@ Cette demande a été générée automatiquement par l'application.
 
           {/* Additional button after message field */}
           <View style={styles.additionalButtonContainer}>
-            <TouchableOpacity style={styles.additionalButton} onPress={handleAdditionalAction}>
+            <TouchableOpacity style={styles.additionalButton} onPress={() => {
+              console.log('Additional email button pressed');
+              handleAdditionalAction();
+            }}>
               <Icon name="mail-outline" size={20} color={colors.accent} />
               <Text style={styles.additionalButtonText}>Envoyer par email</Text>
             </TouchableOpacity>
@@ -209,7 +224,10 @@ Cette demande a été générée automatiquement par l'application.
 
       {/* Fixed submit button at the bottom */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+        <TouchableOpacity style={styles.submitButton} onPress={() => {
+          console.log('Main submit button pressed');
+          handleSubmit();
+        }}>
           <Icon name="send" size={20} color={colors.background} />
           <Text style={styles.submitButtonText}>Envoyer</Text>
         </TouchableOpacity>

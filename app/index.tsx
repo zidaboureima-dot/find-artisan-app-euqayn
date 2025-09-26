@@ -12,12 +12,14 @@ export default function MainScreen() {
   const [expertCount, setExpertCount] = useState(0);
 
   useEffect(() => {
+    console.log('MainScreen mounted, initializing data...');
     // Initialize sample data
     dataStorage.initializeSampleData();
     
     // Get the count of validated experts
     const validatedExperts = dataStorage.getValidatedTradespeople();
     setExpertCount(validatedExperts.length);
+    console.log('Expert count loaded:', validatedExperts.length);
   }, []);
 
   return (
@@ -33,7 +35,10 @@ export default function MainScreen() {
         <View style={styles.menuContainer}>
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => router.push('/search')}
+            onPress={() => {
+              console.log('Search menu button pressed');
+              router.push('/search');
+            }}
           >
             <View style={styles.menuIcon}>
               <Icon name="search" size={32} color={colors.accent} />
@@ -49,7 +54,10 @@ export default function MainScreen() {
 
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => router.push('/register')}
+            onPress={() => {
+              console.log('Register menu button pressed');
+              router.push('/register');
+            }}
           >
             <View style={styles.menuIcon}>
               <Icon name="person-add" size={32} color={colors.accent} />
@@ -65,7 +73,10 @@ export default function MainScreen() {
 
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => router.push('/requests')}
+            onPress={() => {
+              console.log('Requests menu button pressed');
+              router.push('/requests');
+            }}
           >
             <View style={styles.menuIcon}>
               <Icon name="mail" size={32} color={colors.accent} />

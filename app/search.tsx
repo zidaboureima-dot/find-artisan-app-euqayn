@@ -22,27 +22,33 @@ export default function SearchScreen() {
   const [showTradePicker, setShowTradePicker] = useState(false);
 
   useEffect(() => {
+    console.log('SearchScreen mounted, initializing data...');
     // Initialize sample data and load only validated tradespeople
     dataStorage.initializeSampleData();
-    setResults(dataStorage.getValidatedTradespeople());
-    console.log('Loaded validated tradespeople for search:', dataStorage.getValidatedTradespeople().length);
+    const validatedTradespeople = dataStorage.getValidatedTradespeople();
+    setResults(validatedTradespeople);
+    console.log('Loaded validated tradespeople for search:', validatedTradespeople.length);
   }, []);
 
   const handleSearch = () => {
-    console.log('Searching for:', { trade: searchTrade, city: searchCity });
+    console.log('Search button pressed with criteria:', { trade: searchTrade, city: searchCity });
     const searchResults = dataStorage.searchTradespeople(searchTrade, searchCity);
     setResults(searchResults);
     console.log('Search results (validated only):', searchResults.length);
   };
 
   const handleReset = () => {
+    console.log('Reset button pressed');
     setSearchTrade('');
     setSearchCity('');
     // Reset to show all validated tradespeople
-    setResults(dataStorage.getValidatedTradespeople());
+    const allValidated = dataStorage.getValidatedTradespeople();
+    setResults(allValidated);
+    console.log('Reset complete, showing all validated tradespeople:', allValidated.length);
   };
 
   const handleSelectTradesperson = (tradesperson: Tradesperson) => {
+    console.log('Tradesperson card pressed, navigating to profile:', tradesperson.code);
     router.push({
       pathname: '/profile',
       params: { code: tradesperson.code }
@@ -52,7 +58,10 @@ export default function SearchScreen() {
   return (
     <SafeAreaView style={commonStyles.wrapper}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => {
+          console.log('Back button pressed from search screen');
+          router.back();
+        }} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Rechercher un Professionnel</Text>
@@ -64,7 +73,10 @@ export default function SearchScreen() {
             <Text style={styles.label}>Métier</Text>
             <TouchableOpacity
               style={styles.picker}
-              onPress={() => setShowTradePicker(!showTradePicker)}
+              onPress={() => {
+                console.log('Trade picker pressed, current state:', showTradePicker);
+                setShowTradePicker(!showTradePicker);
+              }}
             >
               <Text style={[styles.pickerText, !searchTrade && styles.placeholder]}>
                 {searchTrade || 'Tous les métiers'}
@@ -77,6 +89,7 @@ export default function SearchScreen() {
                 <TouchableOpacity
                   style={styles.tradeItem}
                   onPress={() => {
+                    console.log('All trades option selected');
                     setSearchTrade('');
                     setShowTradePicker(false);
                   }}
@@ -88,6 +101,7 @@ export default function SearchScreen() {
                     key={trade}
                     style={styles.tradeItem}
                     onPress={() => {
+                      console.log('Trade selected:', trade);
                       setSearchTrade(trade);
                       setShowTradePicker(false);
                     }}
@@ -104,7 +118,10 @@ export default function SearchScreen() {
             <TextInput
               style={styles.input}
               value={searchCity}
-              onChangeText={setSearchCity}
+              onChangeText={(text) => {
+                console.log('City search input changed:', text);
+                setSearchCity(text);
+              }}
               placeholder="Toutes les villes"
               placeholderTextColor={colors.grey}
             />

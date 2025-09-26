@@ -23,17 +23,25 @@ export default function AdminLogin({ onClose }: AdminLoginProps) {
   const { login } = useAuth();
 
   const handleLogin = () => {
+    console.log('Admin login attempt with username:', username);
     if (!username.trim() || !password.trim()) {
+      console.log('Login validation failed: empty fields');
       Alert.alert('Erreur', 'Veuillez remplir tous les champs');
       return;
     }
 
+    console.log('Attempting login...');
     const success = login(username.trim(), password);
     if (success) {
+      console.log('Login successful');
       Alert.alert('Succès', 'Connexion administrateur réussie', [
-        { text: 'OK', onPress: onClose }
+        { text: 'OK', onPress: () => {
+          console.log('Login success dialog closed');
+          onClose();
+        }}
       ]);
     } else {
+      console.log('Login failed: incorrect credentials');
       Alert.alert('Erreur', 'Identifiants incorrects');
     }
   };
@@ -42,7 +50,10 @@ export default function AdminLogin({ onClose }: AdminLoginProps) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Connexion Administrateur</Text>
-        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+        <TouchableOpacity onPress={() => {
+          console.log('Admin login close button pressed');
+          onClose();
+        }} style={styles.closeButton}>
           <Icon name="close" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
@@ -53,7 +64,10 @@ export default function AdminLogin({ onClose }: AdminLoginProps) {
           <TextInput
             style={styles.input}
             value={username}
-            onChangeText={setUsername}
+            onChangeText={(text) => {
+              console.log('Username input changed:', text);
+              setUsername(text);
+            }}
             placeholder="Entrez votre nom d'utilisateur"
             placeholderTextColor={colors.grey}
             autoCapitalize="none"
@@ -67,7 +81,10 @@ export default function AdminLogin({ onClose }: AdminLoginProps) {
             <TextInput
               style={[styles.input, styles.passwordInput]}
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(text) => {
+                console.log('Password input changed, length:', text.length);
+                setPassword(text);
+              }}
               placeholder="Entrez votre mot de passe"
               placeholderTextColor={colors.grey}
               secureTextEntry={!showPassword}
@@ -75,7 +92,10 @@ export default function AdminLogin({ onClose }: AdminLoginProps) {
               autoCorrect={false}
             />
             <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
+              onPress={() => {
+                console.log('Password visibility toggle pressed, current state:', showPassword);
+                setShowPassword(!showPassword);
+              }}
               style={styles.eyeButton}
             >
               <Icon
