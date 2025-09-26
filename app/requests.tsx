@@ -44,14 +44,20 @@ export default function RequestsScreen() {
 
   const loadData = () => {
     // Load all requests for admin
-    setRequests(dataStorage.getAllRequests());
+    const allRequests = dataStorage.getAllRequests();
+    setRequests(allRequests);
+    
     // Load pending tradesperson registrations
-    setPendingTradespeople(dataStorage.getPendingTradespeople());
+    const pending = dataStorage.getPendingTradespeople();
+    setPendingTradespeople(pending);
+    
     // Load validated tradespeople for profile management
-    setValidatedTradespeople(dataStorage.getValidatedTradespeople());
-    console.log('Loaded data - Requests:', dataStorage.getAllRequests().length, 
-                'Pending:', dataStorage.getPendingTradespeople().length,
-                'Validated:', dataStorage.getValidatedTradespeople().length);
+    const validated = dataStorage.getValidatedTradespeople();
+    setValidatedTradespeople(validated);
+    
+    console.log('Loaded data - Requests:', allRequests.length, 
+                'Pending:', pending.length,
+                'Validated:', validated.length);
   };
 
   const handleValidateRegistration = (tradesperson: Tradesperson) => {
@@ -66,11 +72,17 @@ export default function RequestsScreen() {
         {
           text: 'Valider',
           onPress: () => {
+            console.log('Validating tradesperson:', tradesperson.id);
             const success = dataStorage.validateTradesperson(tradesperson.id);
             if (success) {
+              console.log('Validation successful, reloading data...');
+              // Immediately update the local state to remove from pending list
+              setPendingTradespeople(prev => prev.filter(p => p.id !== tradesperson.id));
+              // Reload all data to ensure consistency
+              loadData();
               Alert.alert('Succès', 'L\'inscription a été validée avec succès !');
-              loadData(); // Refresh data
             } else {
+              console.log('Validation failed');
               Alert.alert('Erreur', 'Erreur lors de la validation');
             }
           },
@@ -92,11 +104,17 @@ export default function RequestsScreen() {
           text: 'Rejeter',
           style: 'destructive',
           onPress: () => {
+            console.log('Rejecting tradesperson:', tradesperson.id);
             const success = dataStorage.rejectTradesperson(tradesperson.id);
             if (success) {
+              console.log('Rejection successful, reloading data...');
+              // Immediately update the local state to remove from pending list
+              setPendingTradespeople(prev => prev.filter(p => p.id !== tradesperson.id));
+              // Reload all data to ensure consistency
+              loadData();
               Alert.alert('Inscription rejetée', 'L\'inscription a été rejetée et supprimée.');
-              loadData(); // Refresh data
             } else {
+              console.log('Rejection failed');
               Alert.alert('Erreur', 'Erreur lors du rejet');
             }
           },
