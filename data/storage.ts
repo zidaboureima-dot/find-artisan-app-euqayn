@@ -147,12 +147,13 @@ class DataStorage {
   }
 
   // Service requests methods
-  addServiceRequest(request: Omit<ServiceRequest, 'id' | 'createdAt' | 'status'>): ServiceRequest {
+  addServiceRequest(request: Omit<ServiceRequest, 'id' | 'createdAt' | 'status' | 'treated'>): ServiceRequest {
     const newRequest: ServiceRequest = {
       ...request,
       id: Date.now().toString(),
       createdAt: new Date(),
       status: 'pending',
+      treated: false, // Par défaut, les demandes ne sont pas traitées
     };
     this.requests.push(newRequest);
     console.log('Added service request:', newRequest);
@@ -169,6 +170,34 @@ class DataStorage {
 
   getRequestsByExpertCode(expertCode: string): ServiceRequest[] {
     return this.requests.filter(request => request.expertCode === expertCode);
+  }
+
+  // Nouvelle méthode pour marquer une demande comme traitée
+  markRequestAsTreated(requestId: string): boolean {
+    console.log('Attempting to mark request as treated with ID:', requestId);
+    const request = this.requests.find(req => req.id === requestId);
+    if (request) {
+      request.treated = true;
+      console.log('Request marked as treated:', request);
+      return true;
+    } else {
+      console.log('Request not found for marking as treated');
+      return false;
+    }
+  }
+
+  // Nouvelle méthode pour marquer une demande comme non traitée
+  markRequestAsUntreated(requestId: string): boolean {
+    console.log('Attempting to mark request as untreated with ID:', requestId);
+    const request = this.requests.find(req => req.id === requestId);
+    if (request) {
+      request.treated = false;
+      console.log('Request marked as untreated:', request);
+      return true;
+    } else {
+      console.log('Request not found for marking as untreated');
+      return false;
+    }
   }
 
   // Initialize with some sample data

@@ -22,6 +22,7 @@ export interface ServiceRequest {
   message?: string;
   createdAt: Date;
   status: 'pending' | 'accepted' | 'rejected';
+  treated: boolean; // Nouveau champ pour marquer comme traité
 }
 
 export const TRADES = [
