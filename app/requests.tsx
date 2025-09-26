@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Alert,
   TextInput,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -18,6 +19,9 @@ import Icon from '../components/Icon';
 import SimpleBottomSheet from '../components/BottomSheet';
 import AdminLogin from '../components/AdminLogin';
 import { useAuth } from '../contexts/AuthContext';
+
+const { width: screenWidth } = Dimensions.get('window');
+const isSmallScreen = screenWidth < 400;
 
 export default function RequestsScreen() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
@@ -317,8 +321,13 @@ export default function RequestsScreen() {
         <Text style={styles.adminBadgeText}>Mode Administrateur</Text>
       </View>
 
-      {/* Tab Navigation */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabScrollContainer}>
+      {/* Tab Navigation - Responsive */}
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        style={styles.tabScrollContainer}
+        contentContainerStyle={styles.tabScrollContent}
+      >
         <View style={styles.tabContainer}>
           <TouchableOpacity
             style={[styles.tab, activeTab === 'requests' && styles.activeTab]}
@@ -326,12 +335,13 @@ export default function RequestsScreen() {
           >
             <Icon 
               name="mail" 
-              size={18} 
+              size={isSmallScreen ? 16 : 18} 
               color={activeTab === 'requests' ? colors.primary : colors.grey} 
             />
             <Text style={[
               styles.tabText, 
-              activeTab === 'requests' && styles.activeTabText
+              activeTab === 'requests' && styles.activeTabText,
+              isSmallScreen && styles.smallTabText
             ]}>
               Demandes
             </Text>
@@ -348,12 +358,13 @@ export default function RequestsScreen() {
           >
             <Icon 
               name="person-add" 
-              size={18} 
+              size={isSmallScreen ? 16 : 18} 
               color={activeTab === 'registrations' ? colors.primary : colors.grey} 
             />
             <Text style={[
               styles.tabText, 
-              activeTab === 'registrations' && styles.activeTabText
+              activeTab === 'registrations' && styles.activeTabText,
+              isSmallScreen && styles.smallTabText
             ]}>
               Inscriptions
             </Text>
@@ -370,12 +381,13 @@ export default function RequestsScreen() {
           >
             <Icon 
               name="people" 
-              size={18} 
+              size={isSmallScreen ? 16 : 18} 
               color={activeTab === 'profiles' ? colors.primary : colors.grey} 
             />
             <Text style={[
               styles.tabText, 
-              activeTab === 'profiles' && styles.activeTabText
+              activeTab === 'profiles' && styles.activeTabText,
+              isSmallScreen && styles.smallTabText
             ]}>
               Profils
             </Text>
@@ -387,12 +399,13 @@ export default function RequestsScreen() {
           >
             <Icon 
               name="list" 
-              size={18} 
+              size={isSmallScreen ? 16 : 18} 
               color={activeTab === 'categories' ? colors.primary : colors.grey} 
             />
             <Text style={[
               styles.tabText, 
-              activeTab === 'categories' && styles.activeTabText
+              activeTab === 'categories' && styles.activeTabText,
+              isSmallScreen && styles.smallTabText
             ]}>
               Catégories
             </Text>
@@ -427,13 +440,13 @@ export default function RequestsScreen() {
                   {request.requesterPhone && (
                     <View style={styles.contactItem}>
                       <Icon name="call" size={16} color={colors.grey} />
-                      <Text style={styles.contactText}>{request.requesterPhone}</Text>
+                      <Text style={styles.contactText} numberOfLines={1}>{request.requesterPhone}</Text>
                     </View>
                   )}
                   {request.requesterEmail && (
                     <View style={styles.contactItem}>
                       <Icon name="mail" size={16} color={colors.grey} />
-                      <Text style={styles.contactText}>{request.requesterEmail}</Text>
+                      <Text style={styles.contactText} numberOfLines={1}>{request.requesterEmail}</Text>
                     </View>
                   )}
                 </View>
@@ -487,13 +500,13 @@ export default function RequestsScreen() {
                   {tradesperson.phone && (
                     <View style={styles.contactItem}>
                       <Icon name="call" size={16} color={colors.grey} />
-                      <Text style={styles.contactText}>{tradesperson.phone}</Text>
+                      <Text style={styles.contactText} numberOfLines={1}>{tradesperson.phone}</Text>
                     </View>
                   )}
                   {tradesperson.email && (
                     <View style={styles.contactItem}>
                       <Icon name="mail" size={16} color={colors.grey} />
-                      <Text style={styles.contactText}>{tradesperson.email}</Text>
+                      <Text style={styles.contactText} numberOfLines={1}>{tradesperson.email}</Text>
                     </View>
                   )}
                 </View>
@@ -505,19 +518,23 @@ export default function RequestsScreen() {
 
                 <View style={styles.actionButtons}>
                   <TouchableOpacity
-                    style={styles.rejectButton}
+                    style={[styles.rejectButton, isSmallScreen && styles.smallButton]}
                     onPress={() => handleRejectRegistration(tradesperson)}
                   >
-                    <Icon name="close" size={18} color="white" />
-                    <Text style={styles.rejectButtonText}>Rejeter</Text>
+                    <Icon name="close" size={isSmallScreen ? 16 : 18} color="white" />
+                    <Text style={[styles.rejectButtonText, isSmallScreen && styles.smallButtonText]}>
+                      Rejeter
+                    </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.validateButton}
+                    style={[styles.validateButton, isSmallScreen && styles.smallButton]}
                     onPress={() => handleValidateRegistration(tradesperson)}
                   >
-                    <Icon name="checkmark" size={18} color="white" />
-                    <Text style={styles.validateButtonText}>Valider</Text>
+                    <Icon name="checkmark" size={isSmallScreen ? 16 : 18} color="white" />
+                    <Text style={[styles.validateButtonText, isSmallScreen && styles.smallButtonText]}>
+                      Valider
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -550,7 +567,9 @@ export default function RequestsScreen() {
                 <View style={styles.cardHeader}>
                   <View style={styles.cardInfo}>
                     <View style={styles.profileNameRow}>
-                      <Text style={styles.tradespersonName}>{tradesperson.name}</Text>
+                      <Text style={styles.tradespersonName} numberOfLines={1}>
+                        {tradesperson.name}
+                      </Text>
                       {tradesperson.suspended && (
                         <View style={styles.suspendedBadge}>
                           <Text style={styles.suspendedBadgeText}>Suspendu</Text>
@@ -570,49 +589,58 @@ export default function RequestsScreen() {
                   {tradesperson.phone && (
                     <View style={styles.contactItem}>
                       <Icon name="call" size={16} color={colors.grey} />
-                      <Text style={styles.contactText}>{tradesperson.phone}</Text>
+                      <Text style={styles.contactText} numberOfLines={1}>{tradesperson.phone}</Text>
                     </View>
                   )}
                   {tradesperson.email && (
                     <View style={styles.contactItem}>
                       <Icon name="mail" size={16} color={colors.grey} />
-                      <Text style={styles.contactText}>{tradesperson.email}</Text>
+                      <Text style={styles.contactText} numberOfLines={1}>{tradesperson.email}</Text>
                     </View>
                   )}
                 </View>
 
-                <View style={styles.profileActions}>
+                <View style={[styles.profileActions, isSmallScreen && styles.smallProfileActions]}>
                   <TouchableOpacity
-                    style={styles.editButton}
+                    style={[styles.editButton, isSmallScreen && styles.smallActionButton]}
                     onPress={() => handleEditProfile(tradesperson)}
                   >
-                    <Icon name="create" size={16} color={colors.primary} />
-                    <Text style={styles.editButtonText}>Modifier</Text>
+                    <Icon name="create" size={isSmallScreen ? 14 : 16} color={colors.primary} />
+                    <Text style={[styles.editButtonText, isSmallScreen && styles.smallActionText]}>
+                      Modifier
+                    </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={[styles.suspendButton, tradesperson.suspended && styles.reactivateButton]}
+                    style={[
+                      styles.suspendButton, 
+                      tradesperson.suspended && styles.reactivateButton,
+                      isSmallScreen && styles.smallActionButton
+                    ]}
                     onPress={() => handleSuspendProfile(tradesperson)}
                   >
                     <Icon 
                       name={tradesperson.suspended ? "play" : "pause"} 
-                      size={16} 
+                      size={isSmallScreen ? 14 : 16} 
                       color={tradesperson.suspended ? "#4CAF50" : "#FF9800"} 
                     />
                     <Text style={[
                       styles.suspendButtonText,
-                      tradesperson.suspended && styles.reactivateButtonText
+                      tradesperson.suspended && styles.reactivateButtonText,
+                      isSmallScreen && styles.smallActionText
                     ]}>
                       {tradesperson.suspended ? 'Réactiver' : 'Suspendre'}
                     </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.deleteButton}
+                    style={[styles.deleteButton, isSmallScreen && styles.smallActionButton]}
                     onPress={() => handleDeleteProfile(tradesperson)}
                   >
-                    <Icon name="trash" size={16} color="#F44336" />
-                    <Text style={styles.deleteButtonText}>Supprimer</Text>
+                    <Icon name="trash" size={isSmallScreen ? 14 : 16} color="#F44336" />
+                    <Text style={[styles.deleteButtonText, isSmallScreen && styles.smallActionText]}>
+                      Supprimer
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -635,20 +663,22 @@ export default function RequestsScreen() {
           <>
             <Text style={styles.resultsTitle}>Gestion des catégories de métiers</Text>
             
-            <View style={styles.addCategoryContainer}>
+            <View style={[styles.addCategoryContainer, isSmallScreen && styles.smallAddCategoryContainer]}>
               <TextInput
-                style={styles.categoryInput}
+                style={[styles.categoryInput, isSmallScreen && styles.smallCategoryInput]}
                 placeholder="Nouvelle catégorie de métier"
                 value={newCategory}
                 onChangeText={setNewCategory}
                 placeholderTextColor={colors.grey}
               />
               <TouchableOpacity
-                style={styles.addCategoryButton}
+                style={[styles.addCategoryButton, isSmallScreen && styles.smallAddCategoryButton]}
                 onPress={handleAddCategory}
               >
-                <Icon name="add" size={20} color="white" />
-                <Text style={styles.addCategoryButtonText}>Ajouter</Text>
+                <Icon name="add" size={isSmallScreen ? 18 : 20} color="white" />
+                <Text style={[styles.addCategoryButtonText, isSmallScreen && styles.smallButtonText]}>
+                  Ajouter
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -660,7 +690,7 @@ export default function RequestsScreen() {
               <View key={index} style={styles.categoryCard}>
                 <View style={styles.categoryInfo}>
                   <Icon name="hammer" size={20} color={colors.accent} />
-                  <Text style={styles.categoryName}>{category}</Text>
+                  <Text style={styles.categoryName} numberOfLines={1}>{category}</Text>
                 </View>
                 <TouchableOpacity
                   style={styles.removeCategoryButton}
@@ -683,7 +713,7 @@ export default function RequestsScreen() {
           setEditingProfile({});
         }}
       >
-        <View style={styles.bottomSheetContent}>
+        <ScrollView style={styles.bottomSheetContent} showsVerticalScrollIndicator={false}>
           <Text style={styles.bottomSheetTitle}>Modifier le profil</Text>
           
           <View style={styles.formGroup}>
@@ -777,7 +807,7 @@ export default function RequestsScreen() {
               <Text style={styles.saveButtonText}>Enregistrer</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </ScrollView>
       </SimpleBottomSheet>
     </SafeAreaView>
   );
@@ -787,14 +817,14 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.backgroundAlt,
   },
   backButton: {
     padding: 8,
-    marginRight: 10,
+    marginRight: 8,
   },
   headerTitle: {
     fontSize: 18,
@@ -809,38 +839,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#E8F5E8',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    marginHorizontal: 20,
-    marginTop: 10,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginHorizontal: 16,
+    marginTop: 8,
+    borderRadius: 16,
     alignSelf: 'flex-start',
   },
   adminBadgeText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: '#4CAF50',
-    marginLeft: 5,
+    marginLeft: 4,
   },
   tabScrollContainer: {
-    marginTop: 15,
+    marginTop: 12,
+    maxHeight: 60,
+  },
+  tabScrollContent: {
+    paddingHorizontal: 16,
   },
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: colors.backgroundAlt,
-    marginHorizontal: 20,
-    borderRadius: 12,
-    padding: 4,
+    borderRadius: 10,
+    padding: 3,
+    minWidth: screenWidth - 32,
   },
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    gap: 6,
-    minWidth: 100,
+    paddingVertical: 10,
+    paddingHorizontal: isSmallScreen ? 8 : 12,
+    borderRadius: 7,
+    gap: isSmallScreen ? 4 : 6,
+    flex: 1,
+    minWidth: isSmallScreen ? 80 : 100,
   },
   activeTab: {
     backgroundColor: colors.background,
@@ -854,10 +889,13 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   tabText: {
-    fontSize: 12,
+    fontSize: isSmallScreen ? 11 : 12,
     fontWeight: '500',
     color: colors.grey,
     textAlign: 'center',
+  },
+  smallTabText: {
+    fontSize: 10,
   },
   activeTabText: {
     color: colors.text,
@@ -865,18 +903,18 @@ const styles = StyleSheet.create({
   },
   badge: {
     backgroundColor: colors.accent,
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 4,
+    marginLeft: 3,
   },
   urgentBadge: {
     backgroundColor: '#FF6B6B',
   },
   badgeText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '600',
     color: 'white',
   },
@@ -888,71 +926,73 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: 32,
   },
   accessDeniedTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '600',
     color: colors.text,
-    marginTop: 20,
-    marginBottom: 15,
+    marginTop: 16,
+    marginBottom: 12,
+    textAlign: 'center',
   },
   accessDeniedText: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.grey,
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 40,
+    lineHeight: 22,
+    marginBottom: 32,
   },
   loginButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.primary,
     borderRadius: 8,
-    paddingVertical: 15,
-    paddingHorizontal: 25,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
   },
   loginButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: colors.text,
   },
   resultsTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: colors.text,
-    padding: 20,
-    paddingBottom: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingBottom: 8,
   },
   requestCard: {
     backgroundColor: colors.backgroundAlt,
-    marginHorizontal: 20,
-    marginBottom: 15,
-    borderRadius: 12,
-    padding: 15,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 10,
+    padding: 14,
     borderWidth: 1,
     borderColor: colors.grey,
   },
   registrationCard: {
     backgroundColor: colors.backgroundAlt,
-    marginHorizontal: 20,
-    marginBottom: 15,
-    borderRadius: 12,
-    padding: 15,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 10,
+    padding: 14,
     borderWidth: 1,
     borderColor: '#FF6B6B',
-    borderLeftWidth: 4,
+    borderLeftWidth: 3,
     borderLeftColor: '#FF6B6B',
   },
   profileCard: {
     backgroundColor: colors.backgroundAlt,
-    marginHorizontal: 20,
-    marginBottom: 15,
-    borderRadius: 12,
-    padding: 15,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 10,
+    padding: 14,
     borderWidth: 1,
     borderColor: colors.primary,
-    borderLeftWidth: 4,
+    borderLeftWidth: 3,
     borderLeftColor: colors.primary,
   },
   suspendedCard: {
@@ -964,207 +1004,229 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 15,
+    marginBottom: 12,
   },
   cardInfo: {
     flex: 1,
+    marginRight: 12,
   },
   expertCode: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: colors.accent,
-    marginBottom: 4,
+    marginBottom: 3,
   },
   requesterName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
     color: colors.text,
-    marginBottom: 4,
+    marginBottom: 3,
   },
   tradespersonName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 4,
+    marginBottom: 3,
+    flex: 1,
   },
   profileNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   suspendedBadge: {
     backgroundColor: '#FF9800',
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 10,
-    marginLeft: 10,
+    borderRadius: 8,
+    marginLeft: 8,
   },
   suspendedBadgeText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '600',
     color: 'white',
   },
   tradespersonTrade: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
     color: colors.accent,
     marginBottom: 2,
   },
   tradespersonCity: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.grey,
-    marginBottom: 4,
+    marginBottom: 3,
   },
   requestDate: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.grey,
   },
   registrationDate: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.grey,
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 5,
+    alignSelf: 'flex-start',
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: 'white',
   },
   codeContainer: {
     alignItems: 'center',
+    minWidth: 60,
   },
   codeLabel: {
-    fontSize: 10,
+    fontSize: 9,
     color: colors.grey,
     marginBottom: 2,
   },
   codeValue: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     color: colors.accent,
     backgroundColor: colors.background,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 5,
+    textAlign: 'center',
   },
   contactInfo: {
-    gap: 8,
-    marginBottom: 15,
+    gap: 6,
+    marginBottom: 12,
   },
   contactItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
+    flex: 1,
   },
   contactText: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.text,
+    flex: 1,
   },
   messageContainer: {
     backgroundColor: colors.background,
-    padding: 12,
-    borderRadius: 8,
+    padding: 10,
+    borderRadius: 6,
   },
   messageLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: colors.grey,
-    marginBottom: 5,
+    marginBottom: 4,
   },
   messageText: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.text,
-    lineHeight: 20,
+    lineHeight: 18,
   },
   summaryContainer: {
     backgroundColor: colors.background,
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 15,
+    padding: 10,
+    borderRadius: 6,
+    marginBottom: 12,
   },
   summaryLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: colors.grey,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   summaryText: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.text,
-    lineHeight: 20,
+    lineHeight: 18,
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
   rejectButton: {
     flex: 1,
     backgroundColor: '#F44336',
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: 6,
+    paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 5,
+  },
+  smallButton: {
+    paddingVertical: 8,
   },
   rejectButtonText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: 'white',
+  },
+  smallButtonText: {
+    fontSize: 12,
   },
   validateButton: {
     flex: 1,
     backgroundColor: '#4CAF50',
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: 6,
+    paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 5,
   },
   validateButtonText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: 'white',
   },
   profileActions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
+  },
+  smallProfileActions: {
+    gap: 4,
   },
   editButton: {
     flex: 1,
     backgroundColor: colors.background,
-    borderRadius: 8,
-    paddingVertical: 10,
+    borderRadius: 6,
+    paddingVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 4,
     borderWidth: 1,
     borderColor: colors.primary,
   },
+  smallActionButton: {
+    paddingVertical: 6,
+  },
   editButtonText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: colors.primary,
+  },
+  smallActionText: {
+    fontSize: 11,
   },
   suspendButton: {
     flex: 1,
     backgroundColor: colors.background,
-    borderRadius: 8,
-    paddingVertical: 10,
+    borderRadius: 6,
+    paddingVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 4,
     borderWidth: 1,
     borderColor: '#FF9800',
   },
   suspendButtonText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: '#FF9800',
   },
@@ -1177,64 +1239,75 @@ const styles = StyleSheet.create({
   deleteButton: {
     flex: 1,
     backgroundColor: colors.background,
-    borderRadius: 8,
-    paddingVertical: 10,
+    borderRadius: 6,
+    paddingVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 4,
     borderWidth: 1,
     borderColor: '#F44336',
   },
   deleteButtonText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: '#F44336',
   },
   addCategoryContainer: {
     flexDirection: 'row',
-    marginHorizontal: 20,
-    marginBottom: 20,
-    gap: 12,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    gap: 10,
+  },
+  smallAddCategoryContainer: {
+    gap: 8,
   },
   categoryInput: {
     flex: 1,
     backgroundColor: colors.backgroundAlt,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
     color: colors.text,
     borderWidth: 1,
     borderColor: colors.grey,
   },
+  smallCategoryInput: {
+    paddingVertical: 8,
+    fontSize: 14,
+  },
   addCategoryButton: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    borderRadius: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
+  },
+  smallAddCategoryButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   addCategoryButtonText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: 'white',
   },
   categoryListTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
     color: colors.grey,
-    paddingHorizontal: 20,
-    marginBottom: 15,
+    paddingHorizontal: 16,
+    marginBottom: 12,
   },
   categoryCard: {
     backgroundColor: colors.backgroundAlt,
-    marginHorizontal: 20,
-    marginBottom: 10,
-    borderRadius: 8,
-    padding: 15,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 6,
+    padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -1242,99 +1315,103 @@ const styles = StyleSheet.create({
   categoryInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
+    flex: 1,
   },
   categoryName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
     color: colors.text,
+    flex: 1,
   },
   removeCategoryButton: {
-    padding: 8,
+    padding: 6,
   },
   noRequests: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 40,
+    paddingVertical: 50,
+    paddingHorizontal: 32,
   },
   noRequestsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginTop: 12,
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  noRequestsSubtext: {
+    fontSize: 13,
+    color: colors.grey,
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 24,
+  },
+  bottomSheetContent: {
+    maxHeight: screenWidth > 400 ? 600 : 500,
+    padding: 16,
+  },
+  bottomSheetTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: colors.text,
-    marginTop: 15,
-    marginBottom: 5,
-  },
-  noRequestsSubtext: {
-    fontSize: 14,
-    color: colors.grey,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 30,
-  },
-  bottomSheetContent: {
-    padding: 20,
-  },
-  bottomSheetTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 20,
+    marginBottom: 16,
     textAlign: 'center',
   },
   formGroup: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   formLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   formInput: {
     backgroundColor: colors.backgroundAlt,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
     color: colors.text,
     borderWidth: 1,
     borderColor: colors.grey,
   },
   textArea: {
-    height: 100,
+    height: 80,
     textAlignVertical: 'top',
   },
   bottomSheetActions: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 10,
+    gap: 10,
+    marginTop: 8,
   },
   cancelButton: {
     flex: 1,
     backgroundColor: colors.backgroundAlt,
-    borderRadius: 8,
-    paddingVertical: 15,
+    borderRadius: 6,
+    paddingVertical: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: colors.grey,
   },
   saveButton: {
     flex: 1,
     backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingVertical: 15,
+    borderRadius: 6,
+    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 6,
   },
   saveButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: 'white',
   },
