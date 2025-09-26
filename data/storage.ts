@@ -28,12 +28,16 @@ class DataStorage {
 
   // Retourne seulement les artisans validés et non suspendus pour la recherche publique
   getValidatedTradespeople(): Tradesperson[] {
-    return this.tradespeople.filter(person => person.validated);
+    const validated = this.tradespeople.filter(person => person.validated);
+    console.log('Getting validated tradespeople:', validated.length, 'found');
+    return validated;
   }
 
   // Retourne les artisans en attente de validation (pour les admins)
   getPendingTradespeople(): Tradesperson[] {
-    return this.tradespeople.filter(person => !person.validated);
+    const pending = this.tradespeople.filter(person => !person.validated);
+    console.log('Getting pending tradespeople:', pending.length, 'found');
+    return pending;
   }
 
   searchTradespeople(trade?: string, city?: string): Tradesperson[] {
@@ -54,24 +58,34 @@ class DataStorage {
 
   // Nouvelle méthode pour valider un artisan
   validateTradesperson(id: string): boolean {
+    console.log('Attempting to validate tradesperson with ID:', id);
+    console.log('Current tradespeople count:', this.tradespeople.length);
     const tradesperson = this.tradespeople.find(person => person.id === id);
     if (tradesperson) {
+      console.log('Found tradesperson to validate:', tradesperson.name);
       tradesperson.validated = true;
-      console.log('Tradesperson validated:', tradesperson);
+      console.log('Tradesperson validated successfully:', tradesperson);
       return true;
+    } else {
+      console.log('Tradesperson not found for validation');
+      return false;
     }
-    return false;
   }
 
   // Nouvelle méthode pour rejeter un artisan
   rejectTradesperson(id: string): boolean {
+    console.log('Attempting to reject tradesperson with ID:', id);
+    console.log('Current tradespeople count:', this.tradespeople.length);
     const index = this.tradespeople.findIndex(person => person.id === id);
     if (index !== -1) {
       const rejected = this.tradespeople.splice(index, 1)[0];
-      console.log('Tradesperson rejected and removed:', rejected);
+      console.log('Tradesperson rejected and removed:', rejected.name);
+      console.log('Remaining tradespeople count:', this.tradespeople.length);
       return true;
+    } else {
+      console.log('Tradesperson not found for rejection');
+      return false;
     }
-    return false;
   }
 
   // Nouvelle méthode pour mettre à jour un profil d'artisan
@@ -149,6 +163,10 @@ class DataStorage {
     return this.requests;
   }
 
+  getServiceRequests(): ServiceRequest[] {
+    return this.requests;
+  }
+
   getRequestsByExpertCode(expertCode: string): ServiceRequest[] {
     return this.requests.filter(request => request.expertCode === expertCode);
   }
@@ -156,7 +174,10 @@ class DataStorage {
   // Initialize with some sample data
   initializeSampleData() {
     if (this.tradespeople.length === 0) {
-      const sampleTradespeople = [
+      console.log('Initializing sample data...');
+      
+      // Données d'exemple déjà validées
+      const validatedTradespeople = [
         {
           code: 'MAC001',
           name: 'Jean Dupont',
@@ -174,7 +195,11 @@ class DataStorage {
           profileSummary: 'Plombière qualifiée spécialisée dans l\'installation et la réparation de systèmes de plomberie résidentiels. Expertise en dépannage d\'urgence, installation de salles de bains et systèmes de chauffage. Service rapide et efficace.',
           phone: '06 98 76 54 32',
           email: 'marie.martin@email.com'
-        },
+        }
+      ];
+
+      // Données d'exemple en attente de validation
+      const pendingTradespeople = [
         {
           code: 'ELE003',
           name: 'Pierre Moreau',
@@ -195,11 +220,23 @@ class DataStorage {
         }
       ];
 
-      // Ajouter les données d'exemple et les valider automatiquement
-      sampleTradespeople.forEach(person => {
+      // Ajouter les données validées
+      validatedTradespeople.forEach(person => {
         const addedPerson = this.addTradesperson(person);
-        this.validateTradesperson(addedPerson.id); // Valider automatiquement les données d'exemple
+        this.validateTradesperson(addedPerson.id);
+        console.log('Added and validated:', addedPerson.name);
       });
+
+      // Ajouter les données en attente (non validées)
+      pendingTradespeople.forEach(person => {
+        const addedPerson = this.addTradesperson(person);
+        console.log('Added pending:', addedPerson.name);
+      });
+
+      console.log('Sample data initialization completed');
+      console.log('Total tradespeople:', this.tradespeople.length);
+      console.log('Validated:', this.getValidatedTradespeople().length);
+      console.log('Pending:', this.getPendingTradespeople().length);
     }
   }
 }

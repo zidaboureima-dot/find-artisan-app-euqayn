@@ -45,21 +45,27 @@ export default function RequestsScreen() {
 
   const loadData = () => {
     console.log('Loading admin data...');
-    // Load all requests for admin
-    const allRequests = dataStorage.getAllRequests();
-    setRequests(allRequests);
-    
-    // Load pending tradesperson registrations
-    const pending = dataStorage.getPendingTradespeople();
-    setPendingTradespeople(pending);
-    
-    // Load validated tradespeople for profile management
-    const validated = dataStorage.getValidatedTradespeople();
-    setValidatedTradespeople(validated);
-    
-    console.log('Loaded data - Requests:', allRequests.length, 
-                'Pending:', pending.length,
-                'Validated:', validated.length);
+    try {
+      // Load all requests for admin
+      const allRequests = dataStorage.getAllRequests();
+      console.log('Loaded requests:', allRequests.length);
+      setRequests(allRequests);
+      
+      // Load pending tradesperson registrations
+      const pending = dataStorage.getPendingTradespeople();
+      console.log('Loaded pending tradespeople:', pending.length);
+      setPendingTradespeople(pending);
+      
+      // Load validated tradespeople for profile management
+      const validated = dataStorage.getValidatedTradespeople();
+      console.log('Loaded validated tradespeople:', validated.length);
+      setValidatedTradespeople(validated);
+      
+      console.log('Data loading completed successfully');
+    } catch (error) {
+      console.error('Error loading data:', error);
+      Alert.alert('Erreur', 'Erreur lors du chargement des données');
+    }
   };
 
   const handleValidateRegistration = (tradesperson: Tradesperson) => {
@@ -77,17 +83,28 @@ export default function RequestsScreen() {
           text: 'Valider',
           onPress: () => {
             console.log('Validating tradesperson:', tradesperson.id);
-            const success = dataStorage.validateTradesperson(tradesperson.id);
-            if (success) {
-              console.log('Validation successful, reloading data...');
-              // Immediately update the local state to remove from pending list
-              setPendingTradespeople(prev => prev.filter(p => p.id !== tradesperson.id));
-              // Reload all data to ensure consistency
-              loadData();
-              Alert.alert('Succès', 'L\'inscription a été validée avec succès !');
-            } else {
-              console.log('Validation failed');
-              Alert.alert('Erreur', 'Erreur lors de la validation');
+            try {
+              const success = dataStorage.validateTradesperson(tradesperson.id);
+              if (success) {
+                console.log('Validation successful, updating UI...');
+                // Immediately update the local state to remove from pending list
+                setPendingTradespeople(prev => {
+                  const updated = prev.filter(p => p.id !== tradesperson.id);
+                  console.log('Updated pending list length:', updated.length);
+                  return updated;
+                });
+                // Reload all data to ensure consistency
+                setTimeout(() => {
+                  loadData();
+                }, 100);
+                Alert.alert('Succès', 'L\'inscription a été validée avec succès !');
+              } else {
+                console.log('Validation failed');
+                Alert.alert('Erreur', 'Erreur lors de la validation');
+              }
+            } catch (error) {
+              console.error('Error during validation:', error);
+              Alert.alert('Erreur', 'Une erreur est survenue lors de la validation');
             }
           },
         },
@@ -111,17 +128,28 @@ export default function RequestsScreen() {
           style: 'destructive',
           onPress: () => {
             console.log('Rejecting tradesperson:', tradesperson.id);
-            const success = dataStorage.rejectTradesperson(tradesperson.id);
-            if (success) {
-              console.log('Rejection successful, reloading data...');
-              // Immediately update the local state to remove from pending list
-              setPendingTradespeople(prev => prev.filter(p => p.id !== tradesperson.id));
-              // Reload all data to ensure consistency
-              loadData();
-              Alert.alert('Inscription rejetée', 'L\'inscription a été rejetée et supprimée.');
-            } else {
-              console.log('Rejection failed');
-              Alert.alert('Erreur', 'Erreur lors du rejet');
+            try {
+              const success = dataStorage.rejectTradesperson(tradesperson.id);
+              if (success) {
+                console.log('Rejection successful, updating UI...');
+                // Immediately update the local state to remove from pending list
+                setPendingTradespeople(prev => {
+                  const updated = prev.filter(p => p.id !== tradesperson.id);
+                  console.log('Updated pending list length after rejection:', updated.length);
+                  return updated;
+                });
+                // Reload all data to ensure consistency
+                setTimeout(() => {
+                  loadData();
+                }, 100);
+                Alert.alert('Inscription rejetée', 'L\'inscription a été rejetée et supprimée.');
+              } else {
+                console.log('Rejection failed');
+                Alert.alert('Erreur', 'Erreur lors du rejet');
+              }
+            } catch (error) {
+              console.error('Error during rejection:', error);
+              Alert.alert('Erreur', 'Une erreur est survenue lors du rejet');
             }
           },
         },
