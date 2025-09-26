@@ -8,6 +8,7 @@ import {
   Alert,
   StyleSheet,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import { colors } from '../styles/commonStyles';
 import { dataStorage } from '../data/storage';
@@ -19,6 +20,9 @@ interface RequestFormProps {
   expertName: string;
   onClose: () => void;
 }
+
+const { width: screenWidth } = Dimensions.get('window');
+const isSmallScreen = screenWidth < 400;
 
 export default function RequestForm({ expertCode, expertName, onClose }: RequestFormProps) {
   const [formData, setFormData] = useState({
@@ -135,31 +139,37 @@ Cette demande a été générée automatiquement par l'application.
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Faire une demande</Text>
+      <View style={[styles.header, isSmallScreen && styles.smallHeader]}>
+        <Text style={[styles.title, isSmallScreen && styles.smallTitle]}>
+          Faire une demande
+        </Text>
         <TouchableOpacity onPress={() => {
           console.log('Close button pressed in RequestForm');
           onClose();
-        }} style={styles.closeButton}>
-          <Icon name="close" size={24} color={colors.text} />
+        }} style={[styles.closeButton, isSmallScreen && styles.smallCloseButton]}>
+          <Icon name="close" size={isSmallScreen ? 20 : 24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
       <ScrollView 
         style={styles.scrollContainer} 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, isSmallScreen && styles.smallScrollContent]}
       >
-        <Text style={styles.subtitle}>
+        <Text style={[styles.subtitle, isSmallScreen && styles.smallSubtitle]}>
           Demande pour: <Text style={styles.expertName}>{expertName}</Text>
         </Text>
-        <Text style={styles.expertCode}>Code: {expertCode}</Text>
+        <Text style={[styles.expertCode, isSmallScreen && styles.smallExpertCode]}>
+          Code: {expertCode}
+        </Text>
 
-        <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Votre nom *</Text>
+        <View style={[styles.form, isSmallScreen && styles.smallForm]}>
+          <View style={[styles.inputGroup, isSmallScreen && styles.smallInputGroup]}>
+            <Text style={[styles.label, isSmallScreen && styles.smallLabel]}>
+              Votre nom *
+            </Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, isSmallScreen && styles.smallInput]}
               value={formData.requesterName}
               onChangeText={(value) => updateField('requesterName', value)}
               placeholder="Nom et prénom"
@@ -167,10 +177,12 @@ Cette demande a été générée automatiquement par l'application.
             />
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Téléphone</Text>
+          <View style={[styles.inputGroup, isSmallScreen && styles.smallInputGroup]}>
+            <Text style={[styles.label, isSmallScreen && styles.smallLabel]}>
+              Téléphone
+            </Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, isSmallScreen && styles.smallInput]}
               value={formData.requesterPhone}
               onChangeText={(value) => updateField('requesterPhone', value)}
               placeholder="06 12 34 56 78"
@@ -179,10 +191,12 @@ Cette demande a été générée automatiquement par l'application.
             />
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
+          <View style={[styles.inputGroup, isSmallScreen && styles.smallInputGroup]}>
+            <Text style={[styles.label, isSmallScreen && styles.smallLabel]}>
+              Email
+            </Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, isSmallScreen && styles.smallInput]}
               value={formData.requesterEmail}
               onChangeText={(value) => updateField('requesterEmail', value)}
               placeholder="email@exemple.com"
@@ -192,44 +206,61 @@ Cette demande a été générée automatiquement par l'application.
             />
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Message (optionnel)</Text>
+          <View style={[styles.inputGroup, isSmallScreen && styles.smallInputGroup]}>
+            <Text style={[styles.label, isSmallScreen && styles.smallLabel]}>
+              Message (optionnel)
+            </Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[
+                styles.input, 
+                styles.textArea, 
+                isSmallScreen && styles.smallInput,
+                isSmallScreen && styles.smallTextArea
+              ]}
               value={formData.message}
               onChangeText={(value) => updateField('message', value)}
               placeholder="Décrivez votre projet ou vos besoins..."
               placeholderTextColor={colors.grey}
               multiline
-              numberOfLines={4}
+              numberOfLines={isSmallScreen ? 3 : 4}
             />
           </View>
 
           {/* Additional button after message field */}
-          <View style={styles.additionalButtonContainer}>
-            <TouchableOpacity style={styles.additionalButton} onPress={() => {
-              console.log('Additional email button pressed');
-              handleAdditionalAction();
-            }}>
-              <Icon name="mail-outline" size={20} color={colors.accent} />
-              <Text style={styles.additionalButtonText}>Envoyer par email</Text>
+          <View style={[styles.additionalButtonContainer, isSmallScreen && styles.smallAdditionalButtonContainer]}>
+            <TouchableOpacity 
+              style={[styles.additionalButton, isSmallScreen && styles.smallAdditionalButton]} 
+              onPress={() => {
+                console.log('Additional email button pressed');
+                handleAdditionalAction();
+              }}
+            >
+              <Icon name="mail-outline" size={isSmallScreen ? 16 : 20} color={colors.accent} />
+              <Text style={[styles.additionalButtonText, isSmallScreen && styles.smallAdditionalButtonText]}>
+                Envoyer par email
+              </Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.note}>
+          <Text style={[styles.note, isSmallScreen && styles.smallNote]}>
             * Au moins un numéro de téléphone ou un email est requis
           </Text>
         </View>
       </ScrollView>
 
       {/* Fixed submit button at the bottom */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.submitButton} onPress={() => {
-          console.log('Main submit button pressed');
-          handleSubmit();
-        }}>
-          <Icon name="send" size={20} color={colors.background} />
-          <Text style={styles.submitButtonText}>Envoyer</Text>
+      <View style={[styles.buttonContainer, isSmallScreen && styles.smallButtonContainer]}>
+        <TouchableOpacity 
+          style={[styles.submitButton, isSmallScreen && styles.smallSubmitButton]} 
+          onPress={() => {
+            console.log('Main submit button pressed');
+            handleSubmit();
+          }}
+        >
+          <Icon name="send" size={isSmallScreen ? 16 : 20} color={colors.background} />
+          <Text style={[styles.submitButtonText, isSmallScreen && styles.smallSubmitButtonText]}>
+            Envoyer
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -245,18 +276,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: isSmallScreen ? 12 : 20,
+    paddingVertical: isSmallScreen ? 10 : 15,
     borderBottomWidth: 1,
     borderBottomColor: colors.backgroundAlt,
   },
+  smallHeader: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
   title: {
-    fontSize: 20,
+    fontSize: isSmallScreen ? 16 : 20,
     fontWeight: '600',
     color: colors.text,
   },
+  smallTitle: {
+    fontSize: 15,
+  },
   closeButton: {
-    padding: 8,
+    padding: isSmallScreen ? 6 : 8,
+  },
+  smallCloseButton: {
+    padding: 4,
   },
   scrollContainer: {
     flex: 1,
@@ -264,89 +305,140 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 20,
   },
+  smallScrollContent: {
+    paddingBottom: 15,
+  },
   subtitle: {
-    fontSize: 16,
+    fontSize: isSmallScreen ? 14 : 16,
     color: colors.text,
-    paddingHorizontal: 20,
-    paddingTop: 15,
+    paddingHorizontal: isSmallScreen ? 12 : 20,
+    paddingTop: isSmallScreen ? 10 : 15,
+  },
+  smallSubtitle: {
+    fontSize: 13,
+    paddingHorizontal: 10,
+    paddingTop: 8,
   },
   expertName: {
     fontWeight: '600',
     color: colors.accent,
   },
   expertCode: {
-    fontSize: 14,
+    fontSize: isSmallScreen ? 12 : 14,
     color: colors.grey,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: isSmallScreen ? 12 : 20,
+    paddingBottom: isSmallScreen ? 12 : 20,
+  },
+  smallExpertCode: {
+    fontSize: 11,
+    paddingHorizontal: 10,
+    paddingBottom: 10,
   },
   form: {
-    paddingHorizontal: 20,
+    paddingHorizontal: isSmallScreen ? 12 : 20,
+  },
+  smallForm: {
+    paddingHorizontal: 10,
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: isSmallScreen ? 12 : 20,
+  },
+  smallInputGroup: {
+    marginBottom: 10,
   },
   label: {
-    fontSize: 16,
+    fontSize: isSmallScreen ? 13 : 16,
     fontWeight: '500',
     color: colors.text,
-    marginBottom: 8,
+    marginBottom: isSmallScreen ? 6 : 8,
+  },
+  smallLabel: {
+    fontSize: 12,
+    marginBottom: 4,
   },
   input: {
     backgroundColor: colors.backgroundAlt,
     borderWidth: 1,
     borderColor: colors.grey,
     borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
+    paddingHorizontal: isSmallScreen ? 10 : 15,
+    paddingVertical: isSmallScreen ? 8 : 12,
+    fontSize: isSmallScreen ? 13 : 16,
     color: colors.text,
   },
+  smallInput: {
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    fontSize: 12,
+    borderRadius: 6,
+  },
   textArea: {
-    height: 100,
+    height: isSmallScreen ? 70 : 100,
     textAlignVertical: 'top',
   },
+  smallTextArea: {
+    height: 60,
+  },
   additionalButtonContainer: {
-    marginBottom: 20,
+    marginBottom: isSmallScreen ? 12 : 20,
+  },
+  smallAdditionalButtonContainer: {
+    marginBottom: 10,
   },
   additionalButton: {
     backgroundColor: colors.backgroundAlt,
     borderWidth: 1,
     borderColor: colors.accent,
     borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 15,
+    paddingVertical: isSmallScreen ? 8 : 12,
+    paddingHorizontal: isSmallScreen ? 10 : 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: isSmallScreen ? 4 : 8,
+  },
+  smallAdditionalButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 6,
   },
   additionalButtonText: {
-    fontSize: 16,
+    fontSize: isSmallScreen ? 13 : 16,
     fontWeight: '500',
     color: colors.accent,
   },
-  note: {
+  smallAdditionalButtonText: {
     fontSize: 12,
+  },
+  note: {
+    fontSize: isSmallScreen ? 10 : 12,
     color: colors.grey,
     fontStyle: 'italic',
     marginBottom: 10,
   },
+  smallNote: {
+    fontSize: 9,
+    marginBottom: 8,
+  },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: isSmallScreen ? 12 : 20,
+    paddingVertical: isSmallScreen ? 10 : 15,
     borderTopWidth: 1,
     borderTopColor: colors.backgroundAlt,
     backgroundColor: colors.background,
   },
+  smallButtonContainer: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
   submitButton: {
     backgroundColor: colors.accent,
     borderRadius: 12,
-    paddingVertical: 16,
+    paddingVertical: isSmallScreen ? 12 : 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    gap: isSmallScreen ? 6 : 10,
     shadowColor: colors.accent,
     shadowOffset: {
       width: 0,
@@ -356,9 +448,16 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
+  smallSubmitButton: {
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
   submitButtonText: {
-    fontSize: 18,
+    fontSize: isSmallScreen ? 15 : 18,
     fontWeight: '700',
     color: colors.background,
+  },
+  smallSubmitButtonText: {
+    fontSize: 14,
   },
 });

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -18,12 +19,13 @@ interface SimpleBottomSheetProps {
   onClose?: () => void;
 }
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
+const isSmallScreen = SCREEN_WIDTH < 400;
 
-// Snap positions for the bottom sheet
+// Snap positions for the bottom sheet - responsive
 const SNAP_POINTS = {
-  HALF: SCREEN_HEIGHT * 0.5,
-  FULL: SCREEN_HEIGHT * 0.8,
+  HALF: SCREEN_HEIGHT * (isSmallScreen ? 0.6 : 0.5),
+  FULL: SCREEN_HEIGHT * (isSmallScreen ? 0.85 : 0.8),
   CLOSED: SCREEN_HEIGHT,
 };
 
@@ -174,6 +176,7 @@ const SimpleBottomSheet: React.FC<SimpleBottomSheetProps> = ({
           <Animated.View
             style={[
               styles.bottomSheet,
+              isSmallScreen && styles.smallBottomSheet,
               {
                 transform: [
                   { translateY: Animated.add(translateY, gestureTranslateY) }
@@ -181,13 +184,15 @@ const SimpleBottomSheet: React.FC<SimpleBottomSheetProps> = ({
               },
             ]}
           >
-            <View style={styles.handle} />
+            <View style={[styles.handle, isSmallScreen && styles.smallHandle]} />
 
-            <View style={styles.contentContainer}>
+            <View style={[styles.contentContainer, isSmallScreen && styles.smallContentContainer]}>
               {children || (
                 <View style={styles.defaultContent}>
-                  <Text style={styles.title}>Bottom Sheet 🎉</Text>
-                  <Text style={styles.description}>
+                  <Text style={[styles.title, isSmallScreen && styles.smallTitle]}>
+                    Bottom Sheet 🎉
+                  </Text>
+                  <Text style={[styles.description, isSmallScreen && styles.smallDescription]}>
                     This is a custom bottom sheet implementation.
                     Try dragging it up and down!
                   </Text>
@@ -230,6 +235,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4.65,
     elevation: 6,
   },
+  smallBottomSheet: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
   handle: {
     width: 40,
     height: 4,
@@ -239,9 +248,18 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 8,
   },
+  smallHandle: {
+    width: 32,
+    height: 3,
+    marginTop: 6,
+    marginBottom: 6,
+  },
   contentContainer: {
     flex: 1,
     padding: 16,
+  },
+  smallContentContainer: {
+    padding: 12,
   },
   defaultContent: {
     flex: 1,
@@ -254,11 +272,21 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 16,
   },
+  smallTitle: {
+    fontSize: 20,
+    marginBottom: 12,
+  },
   description: {
     fontSize: 16,
     color: colors.text,
     textAlign: 'center',
     marginBottom: 20,
+    lineHeight: 22,
+  },
+  smallDescription: {
+    fontSize: 14,
+    marginBottom: 16,
+    lineHeight: 18,
   },
 });
 

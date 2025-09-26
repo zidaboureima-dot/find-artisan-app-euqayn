@@ -20,8 +20,9 @@ import SimpleBottomSheet from '../components/BottomSheet';
 import AdminLogin from '../components/AdminLogin';
 import { useAuth } from '../contexts/AuthContext';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const isSmallScreen = screenWidth < 400;
+const isTablet = screenWidth > 768;
 
 export default function RequestsScreen() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
@@ -399,7 +400,9 @@ export default function RequestsScreen() {
         }} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Administration</Text>
+        <Text style={[styles.headerTitle, isSmallScreen && styles.smallHeaderTitle]}>
+          Administration
+        </Text>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
           <Icon name="log-out" size={20} color={colors.text} />
         </TouchableOpacity>
@@ -410,16 +413,20 @@ export default function RequestsScreen() {
         <Text style={styles.adminBadgeText}>Mode Administrateur</Text>
       </View>
 
-      {/* Tab Navigation - Responsive */}
+      {/* Tab Navigation - Optimized for mobile */}
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false} 
         style={styles.tabScrollContainer}
         contentContainerStyle={styles.tabScrollContent}
       >
-        <View style={styles.tabContainer}>
+        <View style={[styles.tabContainer, isTablet && styles.tabletTabContainer]}>
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'requests' && styles.activeTab]}
+            style={[
+              styles.tab, 
+              activeTab === 'requests' && styles.activeTab,
+              isSmallScreen && styles.smallTab
+            ]}
             onPress={() => {
               console.log('Requests tab pressed');
               setActiveTab('requests');
@@ -427,7 +434,7 @@ export default function RequestsScreen() {
           >
             <Icon 
               name="mail" 
-              size={isSmallScreen ? 16 : 18} 
+              size={isSmallScreen ? 14 : 18} 
               color={activeTab === 'requests' ? colors.primary : colors.grey} 
             />
             <Text style={[
@@ -435,7 +442,7 @@ export default function RequestsScreen() {
               activeTab === 'requests' && styles.activeTabText,
               isSmallScreen && styles.smallTabText
             ]}>
-              Demandes
+              {isSmallScreen ? 'Demandes' : 'Demandes'}
             </Text>
             {requests.length > 0 && (
               <View style={styles.badge}>
@@ -445,7 +452,11 @@ export default function RequestsScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'registrations' && styles.activeTab]}
+            style={[
+              styles.tab, 
+              activeTab === 'registrations' && styles.activeTab,
+              isSmallScreen && styles.smallTab
+            ]}
             onPress={() => {
               console.log('Registrations tab pressed');
               setActiveTab('registrations');
@@ -453,7 +464,7 @@ export default function RequestsScreen() {
           >
             <Icon 
               name="person-add" 
-              size={isSmallScreen ? 16 : 18} 
+              size={isSmallScreen ? 14 : 18} 
               color={activeTab === 'registrations' ? colors.primary : colors.grey} 
             />
             <Text style={[
@@ -461,7 +472,7 @@ export default function RequestsScreen() {
               activeTab === 'registrations' && styles.activeTabText,
               isSmallScreen && styles.smallTabText
             ]}>
-              Inscriptions
+              {isSmallScreen ? 'Inscrip.' : 'Inscriptions'}
             </Text>
             {pendingTradespeople.length > 0 && (
               <View style={[styles.badge, styles.urgentBadge]}>
@@ -471,7 +482,11 @@ export default function RequestsScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'profiles' && styles.activeTab]}
+            style={[
+              styles.tab, 
+              activeTab === 'profiles' && styles.activeTab,
+              isSmallScreen && styles.smallTab
+            ]}
             onPress={() => {
               console.log('Profiles tab pressed');
               setActiveTab('profiles');
@@ -479,7 +494,7 @@ export default function RequestsScreen() {
           >
             <Icon 
               name="people" 
-              size={isSmallScreen ? 16 : 18} 
+              size={isSmallScreen ? 14 : 18} 
               color={activeTab === 'profiles' ? colors.primary : colors.grey} 
             />
             <Text style={[
@@ -492,7 +507,11 @@ export default function RequestsScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'categories' && styles.activeTab]}
+            style={[
+              styles.tab, 
+              activeTab === 'categories' && styles.activeTab,
+              isSmallScreen && styles.smallTab
+            ]}
             onPress={() => {
               console.log('Categories tab pressed');
               setActiveTab('categories');
@@ -500,7 +519,7 @@ export default function RequestsScreen() {
           >
             <Icon 
               name="list" 
-              size={isSmallScreen ? 16 : 18} 
+              size={isSmallScreen ? 14 : 18} 
               color={activeTab === 'categories' ? colors.primary : colors.grey} 
             />
             <Text style={[
@@ -508,7 +527,7 @@ export default function RequestsScreen() {
               activeTab === 'categories' && styles.activeTabText,
               isSmallScreen && styles.smallTabText
             ]}>
-              Catégories
+              {isSmallScreen ? 'Catég.' : 'Catégories'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -518,44 +537,58 @@ export default function RequestsScreen() {
         {activeTab === 'requests' && (
           // Service Requests Tab
           <>
-            <Text style={styles.resultsTitle}>
+            <Text style={[styles.resultsTitle, isSmallScreen && styles.smallResultsTitle]}>
               {requests.length} demande{requests.length > 1 ? 's' : ''} de service
             </Text>
 
             {requests.map((request) => (
-              <View key={request.id} style={styles.requestCard}>
+              <View key={request.id} style={[styles.requestCard, isSmallScreen && styles.smallCard]}>
                 <View style={styles.cardHeader}>
                   <View style={styles.cardInfo}>
-                    <Text style={styles.expertCode}>Code: {request.expertCode}</Text>
-                    <Text style={styles.requesterName}>{request.requesterName}</Text>
-                    <Text style={styles.requestDate}>
+                    <Text style={[styles.expertCode, isSmallScreen && styles.smallText]}>
+                      Code: {request.expertCode}
+                    </Text>
+                    <Text style={[styles.requesterName, isSmallScreen && styles.smallRequesterName]}>
+                      {request.requesterName}
+                    </Text>
+                    <Text style={[styles.requestDate, isSmallScreen && styles.smallDate]}>
                       {formatDate(request.createdAt)}
                     </Text>
                   </View>
                   <View style={[styles.statusBadge, { backgroundColor: getStatusColor(request.status) }]}>
-                    <Text style={styles.statusText}>{getStatusText(request.status)}</Text>
+                    <Text style={[styles.statusText, isSmallScreen && styles.smallStatusText]}>
+                      {getStatusText(request.status)}
+                    </Text>
                   </View>
                 </View>
 
-                <View style={styles.contactInfo}>
+                <View style={[styles.contactInfo, isSmallScreen && styles.smallContactInfo]}>
                   {request.requesterPhone && (
                     <View style={styles.contactItem}>
-                      <Icon name="call" size={16} color={colors.grey} />
-                      <Text style={styles.contactText} numberOfLines={1}>{request.requesterPhone}</Text>
+                      <Icon name="call" size={isSmallScreen ? 14 : 16} color={colors.grey} />
+                      <Text style={[styles.contactText, isSmallScreen && styles.smallContactText]} numberOfLines={1}>
+                        {request.requesterPhone}
+                      </Text>
                     </View>
                   )}
                   {request.requesterEmail && (
                     <View style={styles.contactItem}>
-                      <Icon name="mail" size={16} color={colors.grey} />
-                      <Text style={styles.contactText} numberOfLines={1}>{request.requesterEmail}</Text>
+                      <Icon name="mail" size={isSmallScreen ? 14 : 16} color={colors.grey} />
+                      <Text style={[styles.contactText, isSmallScreen && styles.smallContactText]} numberOfLines={1}>
+                        {request.requesterEmail}
+                      </Text>
                     </View>
                   )}
                 </View>
 
                 {request.message && (
-                  <View style={styles.messageContainer}>
-                    <Text style={styles.messageLabel}>Message:</Text>
-                    <Text style={styles.messageText}>{request.message}</Text>
+                  <View style={[styles.messageContainer, isSmallScreen && styles.smallMessageContainer]}>
+                    <Text style={[styles.messageLabel, isSmallScreen && styles.smallMessageLabel]}>
+                      Message:
+                    </Text>
+                    <Text style={[styles.messageText, isSmallScreen && styles.smallMessageText]}>
+                      {request.message}
+                    </Text>
                   </View>
                 )}
               </View>
@@ -563,9 +596,11 @@ export default function RequestsScreen() {
 
             {requests.length === 0 && (
               <View style={styles.noRequests}>
-                <Icon name="mail-outline" size={48} color={colors.grey} />
-                <Text style={styles.noRequestsText}>Aucune demande de service</Text>
-                <Text style={styles.noRequestsSubtext}>
+                <Icon name="mail-outline" size={isSmallScreen ? 40 : 48} color={colors.grey} />
+                <Text style={[styles.noRequestsText, isSmallScreen && styles.smallNoRequestsText]}>
+                  Aucune demande de service
+                </Text>
+                <Text style={[styles.noRequestsSubtext, isSmallScreen && styles.smallNoRequestsSubtext]}>
                   Les demandes des utilisateurs apparaîtront ici
                 </Text>
               </View>
@@ -576,53 +611,69 @@ export default function RequestsScreen() {
         {activeTab === 'registrations' && (
           // Pending Registrations Tab
           <>
-            <Text style={styles.resultsTitle}>
+            <Text style={[styles.resultsTitle, isSmallScreen && styles.smallResultsTitle]}>
               {pendingTradespeople.length} inscription{pendingTradespeople.length > 1 ? 's' : ''} en attente
             </Text>
 
             {pendingTradespeople.map((tradesperson) => (
-              <View key={tradesperson.id} style={styles.registrationCard}>
+              <View key={tradesperson.id} style={[styles.registrationCard, isSmallScreen && styles.smallCard]}>
                 <View style={styles.cardHeader}>
                   <View style={styles.cardInfo}>
-                    <Text style={styles.tradespersonName}>{tradesperson.name}</Text>
-                    <Text style={styles.tradespersonTrade}>{tradesperson.trade}</Text>
-                    <Text style={styles.tradespersonCity}>{tradesperson.city}</Text>
-                    <Text style={styles.registrationDate}>
+                    <Text style={[styles.tradespersonName, isSmallScreen && styles.smallTradespersonName]}>
+                      {tradesperson.name}
+                    </Text>
+                    <Text style={[styles.tradespersonTrade, isSmallScreen && styles.smallTradespersonTrade]}>
+                      {tradesperson.trade}
+                    </Text>
+                    <Text style={[styles.tradespersonCity, isSmallScreen && styles.smallTradespersonCity]}>
+                      {tradesperson.city}
+                    </Text>
+                    <Text style={[styles.registrationDate, isSmallScreen && styles.smallDate]}>
                       Inscrit le {formatDate(tradesperson.createdAt)}
                     </Text>
                   </View>
-                  <View style={styles.codeContainer}>
-                    <Text style={styles.codeLabel}>Code</Text>
-                    <Text style={styles.codeValue}>{tradesperson.code}</Text>
+                  <View style={[styles.codeContainer, isSmallScreen && styles.smallCodeContainer]}>
+                    <Text style={[styles.codeLabel, isSmallScreen && styles.smallCodeLabel]}>Code</Text>
+                    <Text style={[styles.codeValue, isSmallScreen && styles.smallCodeValue]}>
+                      {tradesperson.code}
+                    </Text>
                   </View>
                 </View>
 
-                <View style={styles.contactInfo}>
+                <View style={[styles.contactInfo, isSmallScreen && styles.smallContactInfo]}>
                   {tradesperson.phone && (
                     <View style={styles.contactItem}>
-                      <Icon name="call" size={16} color={colors.grey} />
-                      <Text style={styles.contactText} numberOfLines={1}>{tradesperson.phone}</Text>
+                      <Icon name="call" size={isSmallScreen ? 14 : 16} color={colors.grey} />
+                      <Text style={[styles.contactText, isSmallScreen && styles.smallContactText]} numberOfLines={1}>
+                        {tradesperson.phone}
+                      </Text>
                     </View>
                   )}
                   {tradesperson.email && (
                     <View style={styles.contactItem}>
-                      <Icon name="mail" size={16} color={colors.grey} />
-                      <Text style={styles.contactText} numberOfLines={1}>{tradesperson.email}</Text>
+                      <Icon name="mail" size={isSmallScreen ? 14 : 16} color={colors.grey} />
+                      <Text style={[styles.contactText, isSmallScreen && styles.smallContactText]} numberOfLines={1}>
+                        {tradesperson.email}
+                      </Text>
                     </View>
                   )}
                 </View>
 
-                <View style={styles.summaryContainer}>
-                  <Text style={styles.summaryLabel}>Résumé du profil:</Text>
-                  <Text style={styles.summaryText}>{tradesperson.profileSummary}</Text>
+                <View style={[styles.summaryContainer, isSmallScreen && styles.smallSummaryContainer]}>
+                  <Text style={[styles.summaryLabel, isSmallScreen && styles.smallSummaryLabel]}>
+                    Résumé du profil:
+                  </Text>
+                  <Text style={[styles.summaryText, isSmallScreen && styles.smallSummaryText]}>
+                    {tradesperson.profileSummary}
+                  </Text>
                 </View>
 
-                <View style={styles.actionButtons}>
+                <View style={[styles.actionButtons, isSmallScreen && styles.smallActionButtons]}>
                   <TouchableOpacity
                     style={[styles.rejectButton, isSmallScreen && styles.smallButton]}
                     onPress={() => handleRejectRegistration(tradesperson)}
                   >
-                    <Icon name="close" size={isSmallScreen ? 16 : 18} color="white" />
+                    <Icon name="close" size={isSmallScreen ? 14 : 18} color="white" />
                     <Text style={[styles.rejectButtonText, isSmallScreen && styles.smallButtonText]}>
                       Rejeter
                     </Text>
@@ -632,7 +683,7 @@ export default function RequestsScreen() {
                     style={[styles.validateButton, isSmallScreen && styles.smallButton]}
                     onPress={() => handleValidateRegistration(tradesperson)}
                   >
-                    <Icon name="checkmark" size={isSmallScreen ? 16 : 18} color="white" />
+                    <Icon name="checkmark" size={isSmallScreen ? 14 : 18} color="white" />
                     <Text style={[styles.validateButtonText, isSmallScreen && styles.smallButtonText]}>
                       Valider
                     </Text>
@@ -643,9 +694,11 @@ export default function RequestsScreen() {
 
             {pendingTradespeople.length === 0 && (
               <View style={styles.noRequests}>
-                <Icon name="person-add-outline" size={48} color={colors.grey} />
-                <Text style={styles.noRequestsText}>Aucune inscription en attente</Text>
-                <Text style={styles.noRequestsSubtext}>
+                <Icon name="person-add-outline" size={isSmallScreen ? 40 : 48} color={colors.grey} />
+                <Text style={[styles.noRequestsText, isSmallScreen && styles.smallNoRequestsText]}>
+                  Aucune inscription en attente
+                </Text>
+                <Text style={[styles.noRequestsSubtext, isSmallScreen && styles.smallNoRequestsSubtext]}>
                   Les nouvelles inscriptions d'artisans apparaîtront ici pour validation
                 </Text>
               </View>
@@ -656,47 +709,60 @@ export default function RequestsScreen() {
         {activeTab === 'profiles' && (
           // Profile Management Tab
           <>
-            <Text style={styles.resultsTitle}>
+            <Text style={[styles.resultsTitle, isSmallScreen && styles.smallResultsTitle]}>
               {validatedTradespeople.length} profil{validatedTradespeople.length > 1 ? 's' : ''} validé{validatedTradespeople.length > 1 ? 's' : ''}
             </Text>
 
             {validatedTradespeople.map((tradesperson) => (
               <View key={tradesperson.id} style={[
                 styles.profileCard,
-                tradesperson.suspended && styles.suspendedCard
+                tradesperson.suspended && styles.suspendedCard,
+                isSmallScreen && styles.smallCard
               ]}>
                 <View style={styles.cardHeader}>
                   <View style={styles.cardInfo}>
                     <View style={styles.profileNameRow}>
-                      <Text style={styles.tradespersonName} numberOfLines={1}>
+                      <Text style={[styles.tradespersonName, isSmallScreen && styles.smallTradespersonName]} numberOfLines={1}>
                         {tradesperson.name}
                       </Text>
                       {tradesperson.suspended && (
-                        <View style={styles.suspendedBadge}>
-                          <Text style={styles.suspendedBadgeText}>Suspendu</Text>
+                        <View style={[styles.suspendedBadge, isSmallScreen && styles.smallSuspendedBadge]}>
+                          <Text style={[styles.suspendedBadgeText, isSmallScreen && styles.smallSuspendedBadgeText]}>
+                            Suspendu
+                          </Text>
                         </View>
                       )}
                     </View>
-                    <Text style={styles.tradespersonTrade}>{tradesperson.trade}</Text>
-                    <Text style={styles.tradespersonCity}>{tradesperson.city}</Text>
+                    <Text style={[styles.tradespersonTrade, isSmallScreen && styles.smallTradespersonTrade]}>
+                      {tradesperson.trade}
+                    </Text>
+                    <Text style={[styles.tradespersonCity, isSmallScreen && styles.smallTradespersonCity]}>
+                      {tradesperson.city}
+                    </Text>
                   </View>
-                  <View style={styles.codeContainer}>
-                    <Text style={styles.codeLabel}>Code</Text>
-                    <Text style={styles.codeValue}>{tradesperson.code}</Text>
+                  <View style={[styles.codeContainer, isSmallScreen && styles.smallCodeContainer]}>
+                    <Text style={[styles.codeLabel, isSmallScreen && styles.smallCodeLabel]}>Code</Text>
+                    <Text style={[styles.codeValue, isSmallScreen && styles.smallCodeValue]}>
+                      {tradesperson.code}
+                    </Text>
                   </View>
                 </View>
 
-                <View style={styles.contactInfo}>
+                <View style={[styles.contactInfo, isSmallScreen && styles.smallContactInfo]}>
                   {tradesperson.phone && (
                     <View style={styles.contactItem}>
-                      <Icon name="call" size={16} color={colors.grey} />
-                      <Text style={styles.contactText} numberOfLines={1}>{tradesperson.phone}</Text>
+                      <Icon name="call" size={isSmallScreen ? 14 : 16} color={colors.grey} />
+                      <Text style={[styles.contactText, isSmallScreen && styles.smallContactText]} numberOfLines={1}>
+                        {tradesperson.phone}
+                      </Text>
                     </View>
                   )}
                   {tradesperson.email && (
                     <View style={styles.contactItem}>
-                      <Icon name="mail" size={16} color={colors.grey} />
-                      <Text style={styles.contactText} numberOfLines={1}>{tradesperson.email}</Text>
+                      <Icon name="mail" size={isSmallScreen ? 14 : 16} color={colors.grey} />
+                      <Text style={[styles.contactText, isSmallScreen && styles.smallContactText]} numberOfLines={1}>
+                        {tradesperson.email}
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -706,9 +772,9 @@ export default function RequestsScreen() {
                     style={[styles.editButton, isSmallScreen && styles.smallActionButton]}
                     onPress={() => handleEditProfile(tradesperson)}
                   >
-                    <Icon name="create" size={isSmallScreen ? 14 : 16} color={colors.primary} />
+                    <Icon name="create" size={isSmallScreen ? 12 : 16} color={colors.primary} />
                     <Text style={[styles.editButtonText, isSmallScreen && styles.smallActionText]}>
-                      Modifier
+                      {isSmallScreen ? 'Modif.' : 'Modifier'}
                     </Text>
                   </TouchableOpacity>
 
@@ -722,7 +788,7 @@ export default function RequestsScreen() {
                   >
                     <Icon 
                       name={tradesperson.suspended ? "play" : "pause"} 
-                      size={isSmallScreen ? 14 : 16} 
+                      size={isSmallScreen ? 12 : 16} 
                       color={tradesperson.suspended ? "#4CAF50" : "#FF9800"} 
                     />
                     <Text style={[
@@ -730,7 +796,7 @@ export default function RequestsScreen() {
                       tradesperson.suspended && styles.reactivateButtonText,
                       isSmallScreen && styles.smallActionText
                     ]}>
-                      {tradesperson.suspended ? 'Réactiver' : 'Suspendre'}
+                      {tradesperson.suspended ? (isSmallScreen ? 'Réact.' : 'Réactiver') : (isSmallScreen ? 'Susp.' : 'Suspendre')}
                     </Text>
                   </TouchableOpacity>
 
@@ -738,9 +804,9 @@ export default function RequestsScreen() {
                     style={[styles.deleteButton, isSmallScreen && styles.smallActionButton]}
                     onPress={() => handleDeleteProfile(tradesperson)}
                   >
-                    <Icon name="trash" size={isSmallScreen ? 14 : 16} color="#F44336" />
+                    <Icon name="trash" size={isSmallScreen ? 12 : 16} color="#F44336" />
                     <Text style={[styles.deleteButtonText, isSmallScreen && styles.smallActionText]}>
-                      Supprimer
+                      {isSmallScreen ? 'Suppr.' : 'Supprimer'}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -749,9 +815,11 @@ export default function RequestsScreen() {
 
             {validatedTradespeople.length === 0 && (
               <View style={styles.noRequests}>
-                <Icon name="people-outline" size={48} color={colors.grey} />
-                <Text style={styles.noRequestsText}>Aucun profil validé</Text>
-                <Text style={styles.noRequestsSubtext}>
+                <Icon name="people-outline" size={isSmallScreen ? 40 : 48} color={colors.grey} />
+                <Text style={[styles.noRequestsText, isSmallScreen && styles.smallNoRequestsText]}>
+                  Aucun profil validé
+                </Text>
+                <Text style={[styles.noRequestsSubtext, isSmallScreen && styles.smallNoRequestsSubtext]}>
                   Les profils validés apparaîtront ici pour gestion
                 </Text>
               </View>
@@ -762,7 +830,9 @@ export default function RequestsScreen() {
         {activeTab === 'categories' && (
           // Category Management Tab
           <>
-            <Text style={styles.resultsTitle}>Gestion des catégories de métiers</Text>
+            <Text style={[styles.resultsTitle, isSmallScreen && styles.smallResultsTitle]}>
+              Gestion des catégories de métiers
+            </Text>
             
             <View style={[styles.addCategoryContainer, isSmallScreen && styles.smallAddCategoryContainer]}>
               <TextInput
@@ -779,28 +849,30 @@ export default function RequestsScreen() {
                 style={[styles.addCategoryButton, isSmallScreen && styles.smallAddCategoryButton]}
                 onPress={handleAddCategory}
               >
-                <Icon name="add" size={isSmallScreen ? 18 : 20} color="white" />
+                <Icon name="add" size={isSmallScreen ? 16 : 20} color="white" />
                 <Text style={[styles.addCategoryButtonText, isSmallScreen && styles.smallButtonText]}>
-                  Ajouter
+                  {isSmallScreen ? 'Ajouter' : 'Ajouter'}
                 </Text>
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.categoryListTitle}>
+            <Text style={[styles.categoryListTitle, isSmallScreen && styles.smallCategoryListTitle]}>
               {dataStorage.getTradeCategories().length} catégorie{dataStorage.getTradeCategories().length > 1 ? 's' : ''} disponible{dataStorage.getTradeCategories().length > 1 ? 's' : ''}
             </Text>
 
             {dataStorage.getTradeCategories().map((category, index) => (
-              <View key={index} style={styles.categoryCard}>
+              <View key={index} style={[styles.categoryCard, isSmallScreen && styles.smallCategoryCard]}>
                 <View style={styles.categoryInfo}>
-                  <Icon name="hammer" size={20} color={colors.accent} />
-                  <Text style={styles.categoryName} numberOfLines={1}>{category}</Text>
+                  <Icon name="hammer" size={isSmallScreen ? 16 : 20} color={colors.accent} />
+                  <Text style={[styles.categoryName, isSmallScreen && styles.smallCategoryName]} numberOfLines={1}>
+                    {category}
+                  </Text>
                 </View>
                 <TouchableOpacity
-                  style={styles.removeCategoryButton}
+                  style={[styles.removeCategoryButton, isSmallScreen && styles.smallRemoveCategoryButton]}
                   onPress={() => handleRemoveCategory(category)}
                 >
-                  <Icon name="close" size={18} color="#F44336" />
+                  <Icon name="close" size={isSmallScreen ? 16 : 18} color="#F44336" />
                 </TouchableOpacity>
               </View>
             ))}
@@ -819,12 +891,14 @@ export default function RequestsScreen() {
         }}
       >
         <ScrollView style={styles.bottomSheetContent} showsVerticalScrollIndicator={false}>
-          <Text style={styles.bottomSheetTitle}>Modifier le profil</Text>
+          <Text style={[styles.bottomSheetTitle, isSmallScreen && styles.smallBottomSheetTitle]}>
+            Modifier le profil
+          </Text>
           
           <View style={styles.formGroup}>
-            <Text style={styles.formLabel}>Nom *</Text>
+            <Text style={[styles.formLabel, isSmallScreen && styles.smallFormLabel]}>Nom *</Text>
             <TextInput
-              style={styles.formInput}
+              style={[styles.formInput, isSmallScreen && styles.smallFormInput]}
               value={editingProfile.name || ''}
               onChangeText={(text) => {
                 console.log('Editing profile name:', text);
@@ -836,9 +910,9 @@ export default function RequestsScreen() {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.formLabel}>Métier *</Text>
+            <Text style={[styles.formLabel, isSmallScreen && styles.smallFormLabel]}>Métier *</Text>
             <TextInput
-              style={styles.formInput}
+              style={[styles.formInput, isSmallScreen && styles.smallFormInput]}
               value={editingProfile.trade || ''}
               onChangeText={(text) => {
                 console.log('Editing profile trade:', text);
@@ -850,9 +924,9 @@ export default function RequestsScreen() {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.formLabel}>Ville *</Text>
+            <Text style={[styles.formLabel, isSmallScreen && styles.smallFormLabel]}>Ville *</Text>
             <TextInput
-              style={styles.formInput}
+              style={[styles.formInput, isSmallScreen && styles.smallFormInput]}
               value={editingProfile.city || ''}
               onChangeText={(text) => {
                 console.log('Editing profile city:', text);
@@ -864,9 +938,9 @@ export default function RequestsScreen() {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.formLabel}>Téléphone</Text>
+            <Text style={[styles.formLabel, isSmallScreen && styles.smallFormLabel]}>Téléphone</Text>
             <TextInput
-              style={styles.formInput}
+              style={[styles.formInput, isSmallScreen && styles.smallFormInput]}
               value={editingProfile.phone || ''}
               onChangeText={(text) => {
                 console.log('Editing profile phone:', text);
@@ -879,9 +953,9 @@ export default function RequestsScreen() {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.formLabel}>Email</Text>
+            <Text style={[styles.formLabel, isSmallScreen && styles.smallFormLabel]}>Email</Text>
             <TextInput
-              style={styles.formInput}
+              style={[styles.formInput, isSmallScreen && styles.smallFormInput]}
               value={editingProfile.email || ''}
               onChangeText={(text) => {
                 console.log('Editing profile email:', text);
@@ -895,9 +969,9 @@ export default function RequestsScreen() {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.formLabel}>Résumé du profil</Text>
+            <Text style={[styles.formLabel, isSmallScreen && styles.smallFormLabel]}>Résumé du profil</Text>
             <TextInput
-              style={[styles.formInput, styles.textArea]}
+              style={[styles.formInput, styles.textArea, isSmallScreen && styles.smallTextArea]}
               value={editingProfile.profileSummary || ''}
               onChangeText={(text) => {
                 console.log('Editing profile summary:', text.length, 'characters');
@@ -906,13 +980,13 @@ export default function RequestsScreen() {
               placeholder="Description des compétences et expériences"
               placeholderTextColor={colors.grey}
               multiline
-              numberOfLines={4}
+              numberOfLines={isSmallScreen ? 3 : 4}
             />
           </View>
 
-          <View style={styles.bottomSheetActions}>
+          <View style={[styles.bottomSheetActions, isSmallScreen && styles.smallBottomSheetActions]}>
             <TouchableOpacity
-              style={styles.cancelButton}
+              style={[styles.cancelButton, isSmallScreen && styles.smallCancelButton]}
               onPress={() => {
                 console.log('Cancel profile edit button pressed');
                 setShowProfileEditor(false);
@@ -920,15 +994,19 @@ export default function RequestsScreen() {
                 setEditingProfile({});
               }}
             >
-              <Text style={styles.cancelButtonText}>Annuler</Text>
+              <Text style={[styles.cancelButtonText, isSmallScreen && styles.smallCancelButtonText]}>
+                Annuler
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.saveButton}
+              style={[styles.saveButton, isSmallScreen && styles.smallSaveButton]}
               onPress={handleSaveProfile}
             >
-              <Icon name="checkmark" size={18} color="white" />
-              <Text style={styles.saveButtonText}>Enregistrer</Text>
+              <Icon name="checkmark" size={isSmallScreen ? 16 : 18} color="white" />
+              <Text style={[styles.saveButtonText, isSmallScreen && styles.smallSaveButtonText]}>
+                Enregistrer
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -941,65 +1019,77 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: isSmallScreen ? 12 : 16,
+    paddingVertical: isSmallScreen ? 10 : 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.backgroundAlt,
   },
   backButton: {
-    padding: 8,
-    marginRight: 8,
+    padding: isSmallScreen ? 6 : 8,
+    marginRight: isSmallScreen ? 6 : 8,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: isSmallScreen ? 16 : 18,
     fontWeight: '600',
     color: colors.text,
     flex: 1,
   },
+  smallHeaderTitle: {
+    fontSize: 15,
+  },
   logoutButton: {
-    padding: 8,
+    padding: isSmallScreen ? 6 : 8,
   },
   adminBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#E8F5E8',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginHorizontal: 16,
-    marginTop: 8,
+    paddingHorizontal: isSmallScreen ? 8 : 12,
+    paddingVertical: isSmallScreen ? 4 : 6,
+    marginHorizontal: isSmallScreen ? 12 : 16,
+    marginTop: isSmallScreen ? 6 : 8,
     borderRadius: 16,
     alignSelf: 'flex-start',
   },
   adminBadgeText: {
-    fontSize: 11,
+    fontSize: isSmallScreen ? 10 : 11,
     fontWeight: '600',
     color: '#4CAF50',
     marginLeft: 4,
   },
   tabScrollContainer: {
-    marginTop: 12,
-    maxHeight: 60,
+    marginTop: isSmallScreen ? 8 : 12,
+    maxHeight: isSmallScreen ? 50 : 60,
   },
   tabScrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: isSmallScreen ? 12 : 16,
   },
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: colors.backgroundAlt,
     borderRadius: 10,
     padding: 3,
-    minWidth: screenWidth - 32,
+    minWidth: screenWidth - (isSmallScreen ? 24 : 32),
+  },
+  tabletTabContainer: {
+    justifyContent: 'center',
+    minWidth: 'auto',
   },
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: isSmallScreen ? 8 : 12,
+    paddingVertical: isSmallScreen ? 8 : 10,
+    paddingHorizontal: isSmallScreen ? 6 : 12,
     borderRadius: 7,
-    gap: isSmallScreen ? 4 : 6,
+    gap: isSmallScreen ? 3 : 6,
     flex: 1,
-    minWidth: isSmallScreen ? 80 : 100,
+    minWidth: isSmallScreen ? 70 : 100,
+  },
+  smallTab: {
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+    minWidth: 65,
   },
   activeTab: {
     backgroundColor: colors.background,
@@ -1013,13 +1103,13 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   tabText: {
-    fontSize: isSmallScreen ? 11 : 12,
+    fontSize: isSmallScreen ? 10 : 12,
     fontWeight: '500',
     color: colors.grey,
     textAlign: 'center',
   },
   smallTabText: {
-    fontSize: 10,
+    fontSize: 9,
   },
   activeTabText: {
     color: colors.text,
@@ -1028,8 +1118,8 @@ const styles = StyleSheet.create({
   badge: {
     backgroundColor: colors.accent,
     borderRadius: 8,
-    minWidth: 16,
-    height: 16,
+    minWidth: isSmallScreen ? 14 : 16,
+    height: isSmallScreen ? 14 : 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 3,
@@ -1038,7 +1128,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF6B6B',
   },
   badgeText: {
-    fontSize: 9,
+    fontSize: isSmallScreen ? 8 : 9,
     fontWeight: '600',
     color: 'white',
   },
@@ -1050,10 +1140,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: isSmallScreen ? 24 : 32,
   },
   accessDeniedTitle: {
-    fontSize: 22,
+    fontSize: isSmallScreen ? 18 : 22,
     fontWeight: '600',
     color: colors.text,
     marginTop: 16,
@@ -1061,10 +1151,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   accessDeniedText: {
-    fontSize: 15,
+    fontSize: isSmallScreen ? 13 : 15,
     color: colors.grey,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: isSmallScreen ? 18 : 22,
     marginBottom: 32,
   },
   loginButton: {
@@ -1072,37 +1162,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.primary,
     borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
+    paddingVertical: isSmallScreen ? 12 : 14,
+    paddingHorizontal: isSmallScreen ? 16 : 20,
   },
   loginButtonText: {
-    fontSize: 15,
+    fontSize: isSmallScreen ? 13 : 15,
     fontWeight: '600',
     color: colors.text,
   },
   resultsTitle: {
-    fontSize: 15,
+    fontSize: isSmallScreen ? 13 : 15,
     fontWeight: '600',
     color: colors.text,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: isSmallScreen ? 12 : 16,
+    paddingVertical: isSmallScreen ? 12 : 16,
     paddingBottom: 8,
+  },
+  smallResultsTitle: {
+    fontSize: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
   },
   requestCard: {
     backgroundColor: colors.backgroundAlt,
-    marginHorizontal: 16,
-    marginBottom: 12,
+    marginHorizontal: isSmallScreen ? 12 : 16,
+    marginBottom: isSmallScreen ? 10 : 12,
     borderRadius: 10,
-    padding: 14,
+    padding: isSmallScreen ? 10 : 14,
     borderWidth: 1,
     borderColor: colors.grey,
   },
   registrationCard: {
     backgroundColor: colors.backgroundAlt,
-    marginHorizontal: 16,
-    marginBottom: 12,
+    marginHorizontal: isSmallScreen ? 12 : 16,
+    marginBottom: isSmallScreen ? 10 : 12,
     borderRadius: 10,
-    padding: 14,
+    padding: isSmallScreen ? 10 : 14,
     borderWidth: 1,
     borderColor: '#FF6B6B',
     borderLeftWidth: 3,
@@ -1110,14 +1205,19 @@ const styles = StyleSheet.create({
   },
   profileCard: {
     backgroundColor: colors.backgroundAlt,
-    marginHorizontal: 16,
-    marginBottom: 12,
+    marginHorizontal: isSmallScreen ? 12 : 16,
+    marginBottom: isSmallScreen ? 10 : 12,
     borderRadius: 10,
-    padding: 14,
+    padding: isSmallScreen ? 10 : 14,
     borderWidth: 1,
     borderColor: colors.primary,
     borderLeftWidth: 3,
     borderLeftColor: colors.primary,
+  },
+  smallCard: {
+    marginHorizontal: 10,
+    marginBottom: 8,
+    padding: 8,
   },
   suspendedCard: {
     borderColor: '#FF9800',
@@ -1128,30 +1228,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: isSmallScreen ? 8 : 12,
   },
   cardInfo: {
     flex: 1,
-    marginRight: 12,
+    marginRight: isSmallScreen ? 8 : 12,
   },
   expertCode: {
-    fontSize: 13,
+    fontSize: isSmallScreen ? 11 : 13,
     fontWeight: '600',
     color: colors.accent,
     marginBottom: 3,
   },
+  smallText: {
+    fontSize: 10,
+  },
   requesterName: {
-    fontSize: 15,
+    fontSize: isSmallScreen ? 13 : 15,
     fontWeight: '500',
     color: colors.text,
     marginBottom: 3,
   },
+  smallRequesterName: {
+    fontSize: 12,
+  },
   tradespersonName: {
-    fontSize: 16,
+    fontSize: isSmallScreen ? 14 : 16,
     fontWeight: '600',
     color: colors.text,
     marginBottom: 3,
     flex: 1,
+  },
+  smallTradespersonName: {
+    fontSize: 13,
   },
   profileNameRow: {
     flexDirection: 'row',
@@ -1160,197 +1269,261 @@ const styles = StyleSheet.create({
   },
   suspendedBadge: {
     backgroundColor: '#FF9800',
-    paddingHorizontal: 6,
+    paddingHorizontal: isSmallScreen ? 4 : 6,
     paddingVertical: 2,
     borderRadius: 8,
-    marginLeft: 8,
+    marginLeft: isSmallScreen ? 4 : 8,
+  },
+  smallSuspendedBadge: {
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+    marginLeft: 3,
   },
   suspendedBadgeText: {
-    fontSize: 9,
+    fontSize: isSmallScreen ? 8 : 9,
     fontWeight: '600',
     color: 'white',
   },
+  smallSuspendedBadgeText: {
+    fontSize: 7,
+  },
   tradespersonTrade: {
-    fontSize: 13,
+    fontSize: isSmallScreen ? 11 : 13,
     fontWeight: '500',
     color: colors.accent,
     marginBottom: 2,
   },
+  smallTradespersonTrade: {
+    fontSize: 10,
+  },
   tradespersonCity: {
-    fontSize: 13,
+    fontSize: isSmallScreen ? 11 : 13,
     color: colors.grey,
     marginBottom: 3,
   },
+  smallTradespersonCity: {
+    fontSize: 10,
+  },
   requestDate: {
-    fontSize: 11,
+    fontSize: isSmallScreen ? 9 : 11,
     color: colors.grey,
   },
+  smallDate: {
+    fontSize: 8,
+  },
   registrationDate: {
-    fontSize: 11,
+    fontSize: isSmallScreen ? 9 : 11,
     color: colors.grey,
   },
   statusBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    paddingHorizontal: isSmallScreen ? 4 : 6,
+    paddingVertical: isSmallScreen ? 2 : 3,
     borderRadius: 5,
     alignSelf: 'flex-start',
   },
   statusText: {
-    fontSize: 11,
+    fontSize: isSmallScreen ? 9 : 11,
     fontWeight: '600',
     color: 'white',
   },
+  smallStatusText: {
+    fontSize: 8,
+  },
   codeContainer: {
     alignItems: 'center',
-    minWidth: 60,
+    minWidth: isSmallScreen ? 50 : 60,
+  },
+  smallCodeContainer: {
+    minWidth: 45,
   },
   codeLabel: {
-    fontSize: 9,
+    fontSize: isSmallScreen ? 8 : 9,
     color: colors.grey,
     marginBottom: 2,
   },
+  smallCodeLabel: {
+    fontSize: 7,
+  },
   codeValue: {
-    fontSize: 12,
+    fontSize: isSmallScreen ? 10 : 12,
     fontWeight: '600',
     color: colors.accent,
     backgroundColor: colors.background,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    paddingHorizontal: isSmallScreen ? 4 : 6,
+    paddingVertical: isSmallScreen ? 2 : 3,
     borderRadius: 5,
     textAlign: 'center',
   },
+  smallCodeValue: {
+    fontSize: 9,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+  },
   contactInfo: {
-    gap: 6,
-    marginBottom: 12,
+    gap: isSmallScreen ? 4 : 6,
+    marginBottom: isSmallScreen ? 8 : 12,
+  },
+  smallContactInfo: {
+    gap: 3,
+    marginBottom: 6,
   },
   contactItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: isSmallScreen ? 4 : 6,
     flex: 1,
   },
   contactText: {
-    fontSize: 13,
+    fontSize: isSmallScreen ? 11 : 13,
     color: colors.text,
     flex: 1,
   },
+  smallContactText: {
+    fontSize: 10,
+  },
   messageContainer: {
     backgroundColor: colors.background,
-    padding: 10,
+    padding: isSmallScreen ? 8 : 10,
     borderRadius: 6,
   },
+  smallMessageContainer: {
+    padding: 6,
+  },
   messageLabel: {
-    fontSize: 11,
+    fontSize: isSmallScreen ? 9 : 11,
     fontWeight: '600',
     color: colors.grey,
     marginBottom: 4,
   },
+  smallMessageLabel: {
+    fontSize: 8,
+    marginBottom: 3,
+  },
   messageText: {
-    fontSize: 13,
+    fontSize: isSmallScreen ? 11 : 13,
     color: colors.text,
-    lineHeight: 18,
+    lineHeight: isSmallScreen ? 15 : 18,
+  },
+  smallMessageText: {
+    fontSize: 10,
+    lineHeight: 13,
   },
   summaryContainer: {
     backgroundColor: colors.background,
-    padding: 10,
+    padding: isSmallScreen ? 8 : 10,
     borderRadius: 6,
-    marginBottom: 12,
+    marginBottom: isSmallScreen ? 8 : 12,
   },
-  summaryLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: colors.grey,
+  smallSummaryContainer: {
+    padding: 6,
     marginBottom: 6,
   },
+  summaryLabel: {
+    fontSize: isSmallScreen ? 9 : 11,
+    fontWeight: '600',
+    color: colors.grey,
+    marginBottom: isSmallScreen ? 4 : 6,
+  },
+  smallSummaryLabel: {
+    fontSize: 8,
+    marginBottom: 3,
+  },
   summaryText: {
-    fontSize: 13,
+    fontSize: isSmallScreen ? 11 : 13,
     color: colors.text,
-    lineHeight: 18,
+    lineHeight: isSmallScreen ? 15 : 18,
+  },
+  smallSummaryText: {
+    fontSize: 10,
+    lineHeight: 13,
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: 10,
+    gap: isSmallScreen ? 6 : 10,
+  },
+  smallActionButtons: {
+    gap: 4,
   },
   rejectButton: {
     flex: 1,
     backgroundColor: '#F44336',
     borderRadius: 6,
-    paddingVertical: 10,
+    paddingVertical: isSmallScreen ? 8 : 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 5,
+    gap: isSmallScreen ? 3 : 5,
   },
   smallButton: {
-    paddingVertical: 8,
+    paddingVertical: 6,
   },
   rejectButtonText: {
-    fontSize: 13,
+    fontSize: isSmallScreen ? 11 : 13,
     fontWeight: '600',
     color: 'white',
   },
   smallButtonText: {
-    fontSize: 12,
+    fontSize: 10,
   },
   validateButton: {
     flex: 1,
     backgroundColor: '#4CAF50',
     borderRadius: 6,
-    paddingVertical: 10,
+    paddingVertical: isSmallScreen ? 8 : 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 5,
+    gap: isSmallScreen ? 3 : 5,
   },
   validateButtonText: {
-    fontSize: 13,
+    fontSize: isSmallScreen ? 11 : 13,
     fontWeight: '600',
     color: 'white',
   },
   profileActions: {
     flexDirection: 'row',
-    gap: 6,
+    gap: isSmallScreen ? 4 : 6,
   },
   smallProfileActions: {
-    gap: 4,
+    gap: 3,
   },
   editButton: {
     flex: 1,
     backgroundColor: colors.background,
     borderRadius: 6,
-    paddingVertical: 8,
+    paddingVertical: isSmallScreen ? 6 : 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: isSmallScreen ? 2 : 4,
     borderWidth: 1,
     borderColor: colors.primary,
   },
   smallActionButton: {
-    paddingVertical: 6,
+    paddingVertical: 4,
   },
   editButtonText: {
-    fontSize: 12,
+    fontSize: isSmallScreen ? 10 : 12,
     fontWeight: '600',
     color: colors.primary,
   },
   smallActionText: {
-    fontSize: 11,
+    fontSize: 9,
   },
   suspendButton: {
     flex: 1,
     backgroundColor: colors.background,
     borderRadius: 6,
-    paddingVertical: 8,
+    paddingVertical: isSmallScreen ? 6 : 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: isSmallScreen ? 2 : 4,
     borderWidth: 1,
     borderColor: '#FF9800',
   },
   suspendButtonText: {
-    fontSize: 12,
+    fontSize: isSmallScreen ? 10 : 12,
     fontWeight: '600',
     color: '#FF9800',
   },
@@ -1364,179 +1537,237 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     borderRadius: 6,
-    paddingVertical: 8,
+    paddingVertical: isSmallScreen ? 6 : 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: isSmallScreen ? 2 : 4,
     borderWidth: 1,
     borderColor: '#F44336',
   },
   deleteButtonText: {
-    fontSize: 12,
+    fontSize: isSmallScreen ? 10 : 12,
     fontWeight: '600',
     color: '#F44336',
   },
   addCategoryContainer: {
     flexDirection: 'row',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    gap: 10,
+    marginHorizontal: isSmallScreen ? 12 : 16,
+    marginBottom: isSmallScreen ? 12 : 16,
+    gap: isSmallScreen ? 6 : 10,
   },
   smallAddCategoryContainer: {
-    gap: 8,
+    gap: 4,
+    marginHorizontal: 10,
+    marginBottom: 10,
   },
   categoryInput: {
     flex: 1,
     backgroundColor: colors.backgroundAlt,
     borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 15,
+    paddingHorizontal: isSmallScreen ? 10 : 12,
+    paddingVertical: isSmallScreen ? 8 : 10,
+    fontSize: isSmallScreen ? 13 : 15,
     color: colors.text,
     borderWidth: 1,
     borderColor: colors.grey,
   },
   smallCategoryInput: {
-    paddingVertical: 8,
-    fontSize: 14,
+    paddingVertical: 6,
+    fontSize: 12,
   },
   addCategoryButton: {
     backgroundColor: colors.primary,
     borderRadius: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: isSmallScreen ? 12 : 16,
+    paddingVertical: isSmallScreen ? 8 : 10,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: isSmallScreen ? 3 : 5,
   },
   smallAddCategoryButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
   },
   addCategoryButtonText: {
-    fontSize: 13,
+    fontSize: isSmallScreen ? 11 : 13,
     fontWeight: '600',
     color: 'white',
   },
   categoryListTitle: {
-    fontSize: 13,
+    fontSize: isSmallScreen ? 11 : 13,
     fontWeight: '500',
     color: colors.grey,
-    paddingHorizontal: 16,
-    marginBottom: 12,
+    paddingHorizontal: isSmallScreen ? 12 : 16,
+    marginBottom: isSmallScreen ? 8 : 12,
+  },
+  smallCategoryListTitle: {
+    fontSize: 10,
+    paddingHorizontal: 10,
+    marginBottom: 6,
   },
   categoryCard: {
     backgroundColor: colors.backgroundAlt,
-    marginHorizontal: 16,
-    marginBottom: 8,
+    marginHorizontal: isSmallScreen ? 12 : 16,
+    marginBottom: isSmallScreen ? 6 : 8,
     borderRadius: 6,
-    padding: 12,
+    padding: isSmallScreen ? 8 : 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  smallCategoryCard: {
+    marginHorizontal: 10,
+    marginBottom: 4,
+    padding: 6,
+  },
   categoryInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: isSmallScreen ? 6 : 10,
     flex: 1,
   },
   categoryName: {
-    fontSize: 15,
+    fontSize: isSmallScreen ? 13 : 15,
     fontWeight: '500',
     color: colors.text,
     flex: 1,
   },
+  smallCategoryName: {
+    fontSize: 12,
+  },
   removeCategoryButton: {
-    padding: 6,
+    padding: isSmallScreen ? 4 : 6,
+  },
+  smallRemoveCategoryButton: {
+    padding: 3,
   },
   noRequests: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 50,
-    paddingHorizontal: 32,
+    paddingVertical: isSmallScreen ? 30 : 50,
+    paddingHorizontal: isSmallScreen ? 24 : 32,
   },
   noRequestsText: {
-    fontSize: 16,
+    fontSize: isSmallScreen ? 14 : 16,
     fontWeight: '600',
     color: colors.text,
     marginTop: 12,
     marginBottom: 4,
     textAlign: 'center',
   },
-  noRequestsSubtext: {
+  smallNoRequestsText: {
     fontSize: 13,
+    marginTop: 8,
+  },
+  noRequestsSubtext: {
+    fontSize: isSmallScreen ? 11 : 13,
     color: colors.grey,
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: isSmallScreen ? 15 : 18,
     marginBottom: 24,
   },
+  smallNoRequestsSubtext: {
+    fontSize: 10,
+    lineHeight: 13,
+    marginBottom: 16,
+  },
   bottomSheetContent: {
-    maxHeight: screenWidth > 400 ? 600 : 500,
-    padding: 16,
+    maxHeight: isSmallScreen ? screenHeight * 0.7 : 600,
+    padding: isSmallScreen ? 12 : 16,
   },
   bottomSheetTitle: {
-    fontSize: 18,
+    fontSize: isSmallScreen ? 16 : 18,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 16,
+    marginBottom: isSmallScreen ? 12 : 16,
     textAlign: 'center',
   },
+  smallBottomSheetTitle: {
+    fontSize: 15,
+    marginBottom: 10,
+  },
   formGroup: {
-    marginBottom: 16,
+    marginBottom: isSmallScreen ? 12 : 16,
   },
   formLabel: {
-    fontSize: 13,
+    fontSize: isSmallScreen ? 11 : 13,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 6,
+    marginBottom: isSmallScreen ? 4 : 6,
+  },
+  smallFormLabel: {
+    fontSize: 10,
+    marginBottom: 3,
   },
   formInput: {
     backgroundColor: colors.backgroundAlt,
     borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 15,
+    paddingHorizontal: isSmallScreen ? 10 : 12,
+    paddingVertical: isSmallScreen ? 8 : 10,
+    fontSize: isSmallScreen ? 13 : 15,
     color: colors.text,
     borderWidth: 1,
     borderColor: colors.grey,
   },
+  smallFormInput: {
+    paddingVertical: 6,
+    fontSize: 12,
+  },
   textArea: {
-    height: 80,
+    height: isSmallScreen ? 60 : 80,
     textAlignVertical: 'top',
+  },
+  smallTextArea: {
+    height: 50,
   },
   bottomSheetActions: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 8,
+    gap: isSmallScreen ? 6 : 10,
+    marginTop: isSmallScreen ? 6 : 8,
+  },
+  smallBottomSheetActions: {
+    gap: 4,
+    marginTop: 4,
   },
   cancelButton: {
     flex: 1,
     backgroundColor: colors.backgroundAlt,
     borderRadius: 6,
-    paddingVertical: 12,
+    paddingVertical: isSmallScreen ? 10 : 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  smallCancelButton: {
+    paddingVertical: 8,
+  },
   cancelButtonText: {
-    fontSize: 15,
+    fontSize: isSmallScreen ? 13 : 15,
     fontWeight: '600',
     color: colors.grey,
+  },
+  smallCancelButtonText: {
+    fontSize: 12,
   },
   saveButton: {
     flex: 1,
     backgroundColor: colors.primary,
     borderRadius: 6,
-    paddingVertical: 12,
+    paddingVertical: isSmallScreen ? 10 : 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: isSmallScreen ? 4 : 6,
+  },
+  smallSaveButton: {
+    paddingVertical: 8,
   },
   saveButtonText: {
-    fontSize: 15,
+    fontSize: isSmallScreen ? 13 : 15,
     fontWeight: '600',
     color: 'white',
+  },
+  smallSaveButtonText: {
+    fontSize: 12,
   },
 });
